@@ -1,0 +1,10 @@
+    api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=140a1ce7c56c3319a157b6692e013917
+
+    api.openweathermap.org/data/2.5/weather?box=-73.977162,40.749796,-73.976347,40.749934&APPID=140a1ce7c56c3319a157b6692e013917
+
+    api.openweathermap.org/data/2.5/weather?APPID=140a1ce7c56c3319a157b6692e013917&zip=10016,us
+
+
+
+    http://openweathermap.org/api
+
