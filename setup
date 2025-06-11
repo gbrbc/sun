@@ -1,0 +1,6 @@
+#!/bin/csh
+
+ssh-agent -k
+ssh-agent -c | grep -v echo > ~/.cshrc.ssh
+source ~/.cshrc.ssh
+ssh-add ~/.ssh/sundeploy
