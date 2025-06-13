@@ -1,0 +1,22 @@
+-*- mode: compilation; default-directory: "/Src/Where_is_the_sun/" -*-
+Compilation started at Mon Jun 25 15:00:18
+
+python3 try4.py
+{'clouds': {'all': 40}, 
+'name': 'New York', 
+'visibility': 16093, 
+'sys': {'country': 'US', 'sunset': 1529973077, 'message': 0.0041, 'type': 1, 'id': 1969, 'sunrise': 1529918775}, 
+'weather': [{'main': 'Clouds', 'id': 802, 'icon': '03d', 'description': 'scattered clouds'}], 
+'coord': {'lat': 40.73, 'lon': -73.99}, 
+'base': 'stations', 
+'dt': 1529950500, 
+'main': {'pressure': 1017, 'temp_min': 298.15, 'temp_max': 301.15, 'temp': 299.78, 'humidity': 34}, 
+'id': 420027420, 
+'wind': {'gust': 7.7, 'speed': 5.1, 'deg': 330}, 'cod': 200}
+xwxw
+Traceback (most recent call last):
+  File "try4.py", line 9, in <module>
+    print(myio["temp"])
+KeyError: 'temp'
+
+Compilation exited abnormally with code 1 at Mon Jun 25 15:00:18
