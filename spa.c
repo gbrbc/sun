@@ -31,25 +31,25 @@
 //   NOTICE
 //   Copyright (C) 2008 Midwest Research Institute, All Rights Reserved
 //
-//This computer software is code in development prepared by Midwest Research Institute, 
+//This computer software is code in development prepared by Midwest Research Institute,
 //(hereinafter the "Contractor"), under Contract DE-AC-99G010337 (Contract) with the Department
 //of Energy (DOE). The United States Government has been granted for itself and others acting
-//on its behalf a paid-up, non-exclusive, irrevocable, worldwide license in the Software to 
-//reproduce, prepare derivative works, and perform publicly and display publicly. Beginning 
-//five (5) years after the date permission to assert copyright is obtained from the DOE, and 
+//on its behalf a paid-up, non-exclusive, irrevocable, worldwide license in the Software to
+//reproduce, prepare derivative works, and perform publicly and display publicly. Beginning
+//five (5) years after the date permission to assert copyright is obtained from the DOE, and
 //subject to any subsequent five (5) year renewals, the United States Government is granted
 //for itself and others acting on its behalf a paid-up, non-exclusive, irrevocable, worldwide
 //license in the Software to reproduce, prepare derivative works, distribute copies to the
 //public, perform publicly and display publicly, and to permit others to do so. If the
 //Contractor ceases to make this computer software available, it may be obtained from DOE's
-//Office of Scientific and Technical Information's Energy Science and Technology Software 
-//Center (ESTSC) at P.O. Box 1020, Oak Ridge, TN 37831-1020. THlS SOFTWARE IS PROVIDED BY THE 
-//CONTRACTOR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO, THE 
-//IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+//Office of Scientific and Technical Information's Energy Science and Technology Software
+//Center (ESTSC) at P.O. Box 1020, Oak Ridge, TN 37831-1020. THlS SOFTWARE IS PROVIDED BY THE
+//CONTRACTOR "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING BUT NOT LIMITED TO, THE
+//IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 //IN NO EVENT SHALL THE CONTRACTOR OR THE U.S. GOVERNMENT BE LIABLE FOR ANY SPECIAL, INDIRECT
-//OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER, INCLUDING BUT NOT LIMITED TO CLAIMS 
-//ASSOCIATED WITH THE LOSS OF DATA OR PROFITS, WHICH MAY RESULT FROM AN ACTION IN CONTRACT, 
-//NEGLIGENCE OR OTHER TORTIOUS CLAIM THAT ARISES OUT OF OR IN CONNECTION WITH THE ACCESS, USE 
+//OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER, INCLUDING BUT NOT LIMITED TO CLAIMS
+//ASSOCIATED WITH THE LOSS OF DATA OR PROFITS, WHICH MAY RESULT FROM AN ACTION IN CONTRACT,
+//NEGLIGENCE OR OTHER TORTIOUS CLAIM THAT ARISES OUT OF OR IN CONNECTION WITH THE ACCESS, USE
 //OR PERFORMANCE OF THIS SOFTWARE.
 //
 //As a condition of using the Software in an application, the developer of the application
@@ -57,7 +57,7 @@
 //end-user in a Help|About screen or equivalent manner.
 //
 //The Software is not being distributed for commercial purposes. Please contact Anne Miller
-//(Anne.Miller@nrel.gov) in the NREL Technology Transfer Office for information concerning a 
+//(Anne.Miller@nrel.gov) in the NREL Technology Transfer Office for information concerning a
 //commercial license to use the Software.
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,13 +97,14 @@
 //         Minor correction made as to when atmos. refraction correction is set to zero.
 // Revised 21-JAN-2008 Andreas
 //         Minor change to two variable declarations.
-// Revised 12-JAN-2009 Andreas 
+// Revised 12-JAN-2009 Andreas
 //         Changed timezone bound check from +/-12 to +/-18 hours.
 // Revised 14-JAN-2009 Andreas
 //         Corrected a constant used to calculate ecliptic mean obliquity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <math.h>
+#include <string.h>
 #include "spa.h"
 
 #define PI         3.1415926535897932384626433832795028841971
@@ -838,7 +839,7 @@ double sun_equatorial_horizontal_parallax(double r)
     return 8.794 / (3600.0 * r);
 }
 
-void sun_right_ascension_parallax_and_topocentric_dec(double latitude, double elevation, 
+void sun_right_ascension_parallax_and_topocentric_dec(double latitude, double elevation,
 	           double xi, double h, double delta, double *delta_alpha, double *delta_prime)
 {
     double delta_alpha_rad;
@@ -878,7 +879,7 @@ double topocentric_elevation_angle(double latitude, double delta_prime, double h
                         cos(lat_rad)*cos(delta_prime_rad) * cos(deg2rad(h_prime))));
 }
 
-double atmospheric_refraction_correction(double pressure, double temperature, 
+double atmospheric_refraction_correction(double pressure, double temperature,
 	                                     double atmos_refract, double e0)
 {
     double del_e = 0;
@@ -914,7 +915,7 @@ double topocentric_azimuth_angle_zero_360(double azimuth180)
     return azimuth180 + 180.0;
 }
 
-double surface_incidence_angle(double zenith, double azimuth180, double azm_rotation, 
+double surface_incidence_angle(double zenith, double azimuth180, double azm_rotation,
 	                                                             double slope)
 {
     double zenith_rad = deg2rad(zenith);

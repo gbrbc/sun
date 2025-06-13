@@ -1,4 +1,4 @@
-#include <time.h> 
+#include <time.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -37,6 +37,7 @@
 /////////////////////////////////////////////
 
 #include <stdio.h>
+#include <string.h>
 #include "spa.h"  //include the SPA header file
 
 int verbose=0;
@@ -76,14 +77,14 @@ int main (int argc, char *argv[])
 	       while ( -1 != ( c = getopt_long_only(argc
 						    ,argv
 						    ,""
-						    ,long_options	
+						    ,long_options
 						    ,&option_index)))
       {
 
 
                switch (c) {
                case 0:
-		 if (verbose) 
+		 if (verbose)
 		   printf("0 option %s", long_options[option_index].name);
                    if (optarg && verbose)
                        printf(" with arg %s", optarg);
@@ -122,7 +123,7 @@ int main (int argc, char *argv[])
     time(&now);
 
 
-    while(1) 
+    while(1)
         {                                        /* wait to pass az */
 
 
@@ -168,7 +169,7 @@ int main (int argc, char *argv[])
     assert(result==0);
 
       if (spa.azimuth+13.0+(44/60)> azwait)
-	{ 
+	{
 	  if ( verbose ) {
 	    printf ("exiting since %.2f > %.2f\n"
 		    ,spa.azimuth+13.0+(44/60)
@@ -177,12 +178,12 @@ int main (int argc, char *argv[])
 	  } /* verbose */
 
 
-	  exit(0); 
+	  exit(0);
 	}   /* if spa .. >  */
 
-	
+
         now = now + 300;
-	sleep(300); 
+	sleep(300);
 
 	//	printf("DEBUG %f at %d\n",spa.azimuth+13.0+(44/60),__LINE__);
 
