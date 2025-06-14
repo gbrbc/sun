@@ -5,12 +5,12 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 
-from mysun.pybdshadow import *
+from pybdshadow import *
 #import analysis
 #from analysis import cal_sunshine
-from mysun.analysis import *
+from analysis import *
 
-
+import matplotlib.pyplot as plt
 
 from shapely  import wkt
 from shapely.wkt  import loads
@@ -175,18 +175,29 @@ def try2():
 
     print(LINE(),"teal")
     gdf1.head()
-    wilma=gdf.to_json(to_wgs84=True)
+    wilma=gdf1.to_json(to_wgs84=True)
 
     print(LINE(),wilma)
 
-    exit()
 
 
+    print('cal sunshine')
     mymy = cal_sunshine(gdf1)
+    print(mymy)
 
 
+    print('shadows')
+#pybdshadow.
+    shadows = bdshadow_sunlight(gdf1,date)
+    shadows
 
-    shadows = pybdshadow.bdshadow_sunlight(gdf1,date)    
+
+    ax=plt.subplot(111)
+    # plot buildings
+    gdf1.plot(ax=ax)
+
+    plt.show()
+
 
 #possible answer
 ##https://gis.stackexchange.com/questions/188622/rounding-all-coordinates-in-shapely
