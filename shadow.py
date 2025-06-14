@@ -220,11 +220,11 @@ def tryreport():
     print(LINE(),wilma)
 
 
-
+    date=pd.to_datetime('now',format='%Y-%m-%d').tz_localize('America/New_York').tz_convert('UTC')
     print('cal sunshine')
-    mymy = cal_sunshine(gdf1)
+    mymy = cal_sunshine(gdf1,day=date)
 #    print(mymy)
-
+# 
 
  #   #Given UTC datetime
 #    date = pd.to_datetime('2022-01-01 3:45:33.959797119')\
