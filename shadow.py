@@ -37,30 +37,70 @@ Use the formula s = h/tan A to calculate shadow length. See the table below for 
 def LINE():
     return "Line: " +  str(sys._getframe(1).f_lineno) + "  "
 
+
+
+##arg1 is the geometry
+def convert_multipolygon(gdf9):
+    gdf_approx = gpd.GeoDataFrame({'id': [1], 'geometry': [gdf9]}, crs="WGS84")
+
+    # Calculate the convex hull and assign it back to a new GeoDataFrame or replace the geometry
+    convex_hull_gs = gdf_approx.geometry.convex_hull
+    # To put it into a GeoDataFrame, you can create a new one or update an existing one
+    gdf_convex_hull = gpd.GeoDataFrame(gdf_approx.drop(columns=['geometry']), geometry=convex_hull_gs, crs=gdf_approx.crs)
+    
+    return gdf_convex_hull.iloc[0,1]
+
+
+
+
+
+
+
+
+
+
+
+
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 
+#######################READ THE FILE#######################
 
 df = pd.read_csv("path1.csv")
 df['geometry'] = df['geometry'].apply(loads)
 gdf1 = gpd.GeoDataFrame(df, crs="wgs84")  # Replace "your_crs"
 
-
-print(LINE(), " First geom ",    gdf1['geometry'])
-print("And the columns ")
-
-gdf=gpd.GeoDataFrame(gdf1)
-
-print("23656")
-print(LINE(),gdf1," ==== ",type(gdf1))
+##https://stackoverflow.com/questions/56709561/how-to-smartly-loop-over-all-points-in-a-geodataframe-and-look-at-nearest-neig
+##df=pd.DataFrame({'points':points,'values':values})
+##gdf=gp.GeoDataFrame(df,geometry=[loads(x) for x in df.points], crs={'init': 'epsg:' + str(25832)})
 
 
+#######################MULTI TO POLYGON#######################
+
+#print(gdf1.geometry.data_type)
+
+gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
 
 
 
-fred=gdf.to_json(to_wgs84=True)
+
+#print(LINE(), " First geom ",    gdf1['geometry'])
+#print("And the columns ")
+
+## late 13jun   gdf=gpd.GeoDataFrame(gdf1)
+
+#print("23656")
+#print(LINE(),gdf1," ==== ",type(gdf1))
+
+
+
+
+
+
+fred=gdf1.to_json(to_wgs84=True)
 
 print(LINE(),fred)
 
@@ -81,13 +121,9 @@ def try1():
 
 
 
-
 def try2():
-    #Given UTC datetime
-    date = pd.to_datetime('2022-01-01 3:45:33.959797119')\
-        .tz_localize('Asia/Shanghai')\
-        .tz_convert('UTC')
-    #Calculate building shadow for sun light
+
+
     print(LINE(), "try2 to shadows")
 
 
@@ -168,6 +204,10 @@ def try2():
 
     print(LINE(), 'mauve out')
 
+
+
+def tryreport():
+
 ###this crashes in bdshad.... below
 #    buildingshadow = building.copy()
 #    a = buildingshadow['geometry'].apply(lambda r: list(r.exterior.coords))
@@ -183,13 +223,22 @@ def try2():
 
     print('cal sunshine')
     mymy = cal_sunshine(gdf1)
-    print(mymy)
+#    print(mymy)
 
 
-    print('shadows')
+ #   #Given UTC datetime
+#    date = pd.to_datetime('2022-01-01 3:45:33.959797119')\
+#        .tz_localize('Asia/Shanghai')\
+#        .tz_convert('UTC')
+    date=pd.to_datetime('now').tz_localize('America/New_York').tz_convert('UTC')
+
+#Calculate building shadow for sun light
+
+
+#    print('shadows')
 #pybdshadow.
-    shadows = bdshadow_sunlight(gdf1,date)
-    shadows
+#    shadows = bdshadow_sunlight(gdf1,date)
+#    shadows
 
 
     ax=plt.subplot(111)
@@ -223,7 +272,15 @@ def try4(fred):
 
 
 
-try2()
+#try2()
+
+
+###the file read run first, without and calls to subroutines
+
+tryreport()
+
+
+
 
 
 ###https://people.csail.mit.edu/ericchan/bib/pdf/p275-atherton.pdf
