@@ -99,10 +99,10 @@ gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
 
 
+def tryjson():
+    fred=gdf1.to_json(to_wgs84=True)
 
-fred=gdf1.to_json(to_wgs84=True)
-
-print(LINE(),fred)
+    print(LINE(),fred)
 
 
 
@@ -271,14 +271,87 @@ def try4(fred):
 
 
 
+def trypoint( pointlon,pointlat,namer):
+
+
+    # above   pointlon,pointlat,
+
+    print(f"lat: {pointlat}, long: {pointlon} name: {namer}")
+
+
+
+    pointheight = 5;
+    shadows = bdshadow_pointlight(gdf1,pointlon,pointlat,pointheight)
+    print("-" * 30)
+    
+    print(LINE(),"  shadows")
+    print(shadows)
+    print(type(shadows))
+    print("-" * 30)
+    result = list(shadows['geometry'].iloc[0].exterior.coords)
+    print(LINE(),"result")
+    print(result)
+
+##data frame w point we care about    
+    newdf=pd.DataFrame({'longitude': [pointlon], 'latitude': [pointlat]})
+##convert df to geo df
+    geometryp = gpd.GeoDataFrame(newdf,geometry=gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84"))
+##old    geometryp = gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84")
+    print('*********')
+
+
+    for item in shadows['geometry']:
+        newgds=gpd.GeoSeries(item, crs="WGS84")
+        print("/" * 30)
+        print("Data Series ", newgds.contains(geometryp))
+        print("-" * 30)
+
+
+
+    exit()
+    for building_id,geometry, in shadows.items():
+        print("Column name ", type(geometry))
+        print("building_id ", type(building_id))
+        print(building_id)
+        print("-" * 30)
+        print(LINE(),"geometry ")        
+        print(type(geometry))
+        print(geometry)
+        print("+" * 30)
+
+        newgds=gpd.GeoSeries(geometry)
+        print("/" * 30)
+        print("Data Series ", newgds.contains(geometryp))
+        print("-" * 30)
+
+
+
+
+    if (shadows.contains(geometryp)):
+        print('Yes')
+    else:
+        print('Nay')
+
+    return
+
+
+    print('*********')
+    wilma=gdf1.to_json(to_wgs84=True)
+
+    print(wilma)
+
 
 #try2()
 
 
 ###the file read run first, without and calls to subroutines
 
-tryreport()
+#tryreport()
 
+
+trypoint( 40.755515,-73.971029,  "mcds")
+trypoint( 40.756133,-73.970579,  "real mcds")
+trypoint( 40.756751,-73.970085, "jpmwealth")
 
 
 
