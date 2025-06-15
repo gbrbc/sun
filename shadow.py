@@ -33,6 +33,8 @@ Use the formula s = h/tan A to calculate shadow length. See the table below for 
 
 '''
 
+global icount
+icount=0
 
 def LINE():
     return "Line: " +  str(sys._getframe(1).f_lineno) + "  "
@@ -272,7 +274,7 @@ def try4(fred):
 
 
 def trypoint( pointlon,pointlat,namer):
-
+    global icount
 
     # above   pointlon,pointlat,
 
@@ -299,6 +301,9 @@ def trypoint( pointlon,pointlat,namer):
 ##old    geometryp = gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84")
     print('*********')
 
+    print(namer)
+
+    print("-" * 30)
 
     for item in shadows['geometry']:
         newgds=gpd.GeoSeries(item, crs="WGS84")
@@ -308,7 +313,24 @@ def trypoint( pointlon,pointlat,namer):
 
 
 
-    exit()
+    s2 = shadows.contains(geometryp)
+    if (s2.any()):
+        print('Yes')
+    else:
+        print('Nay')
+
+
+    wilma=gdf1.to_json(to_wgs84=True)
+    filename = f"file_{icount}.json" # Create unique filename
+    icount += 1
+    with open(filename, "w") as f: # Open file in write mode
+        f.write(wilma) # Write data to file    
+
+
+
+
+    return
+##    exit()
     for building_id,geometry, in shadows.items():
         print("Column name ", type(geometry))
         print("building_id ", type(building_id))
@@ -338,7 +360,7 @@ def trypoint( pointlon,pointlat,namer):
     print('*********')
     wilma=gdf1.to_json(to_wgs84=True)
 
-    print(wilma)
+#    print(wilma)
 
 
 #try2()
@@ -352,7 +374,7 @@ def trypoint( pointlon,pointlat,namer):
 trypoint( 40.755515,-73.971029,  "mcds")
 trypoint( 40.756133,-73.970579,  "real mcds")
 trypoint( 40.756751,-73.970085, "jpmwealth")
-
+trypoint( 40.756015,-73.970487, "essAbagel")
 
 
 
