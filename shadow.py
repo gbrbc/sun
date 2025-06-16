@@ -327,6 +327,13 @@ def trypoint( pointlon,pointlat,namer):
         f.write(wilma) # Write data to file    
 
 
+    wilma=gdf1.to_json(to_wgs84=True)
+    filename="/tmp/file_whole.json"
+    with open(filename, "w") as f: # Open file in write mode
+        f.write(wilma) # Write data to file    
+
+
+#    print(wilma)
 
 
     return
@@ -354,13 +361,14 @@ def trypoint( pointlon,pointlat,namer):
     else:
         print('Nay')
 
-    return
+
 
 
     print('*********')
-    wilma=gdf1.to_json(to_wgs84=True)
 
-#    print(wilma)
+    return
+
+
 
 
 #try2()
