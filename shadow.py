@@ -74,6 +74,13 @@ df = pd.read_csv("path1.csv")
 df['geometry'] = df['geometry'].apply(loads)
 gdf1 = gpd.GeoDataFrame(df, crs="wgs84")  # Replace "your_crs"
 
+barney=gdf1.to_json(to_wgs84=True)
+filename="/tmp/file_whole2.json"
+with open(filename, "w") as f: # Open file in write mode
+    f.write(barney) # Write data to file    
+
+
+
 ##https://stackoverflow.com/questions/56709561/how-to-smartly-loop-over-all-points-in-a-geodataframe-and-look-at-nearest-neig
 ##df=pd.DataFrame({'points':points,'values':values})
 ##gdf=gp.GeoDataFrame(df,geometry=[loads(x) for x in df.points], crs={'init': 'epsg:' + str(25832)})
@@ -312,7 +319,10 @@ def trypoint( pointlon,pointlat,namer):
         print("-" * 30)
 
 
-
+#    shadows=shadows.to_crs(crs="WGS84",inplace=True)
+    print("shadows type ",type(shadows))
+    print("shadows ",shadows.crs)
+    print("geometryp ",geometryp.crs)
     s2 = shadows.contains(geometryp)
     if (s2.any()):
         print('Yes')
@@ -321,7 +331,7 @@ def trypoint( pointlon,pointlat,namer):
 
 
     wilma=gdf1.to_json(to_wgs84=True)
-    filename = f"file_{icount}.json" # Create unique filename
+    filename = f"/tmp/file_{icount}.json" # Create unique filename
     icount += 1
     with open(filename, "w") as f: # Open file in write mode
         f.write(wilma) # Write data to file    
@@ -379,11 +389,11 @@ def trypoint( pointlon,pointlat,namer):
 #tryreport()
 
 
-trypoint( 40.755515,-73.971029,  "mcds")
-trypoint( 40.756133,-73.970579,  "real mcds")
-trypoint( 40.756751,-73.970085, "jpmwealth")
-trypoint( 40.756015,-73.970487, "essAbagel")
-
+#trypoint( 40.755515,-73.971029,  "mcds")
+#trypoint( 40.756133,-73.970579,  "real mcds")
+#trypoint( 40.756751,-73.970085, "jpmwealth")
+#trypoint( 40.756015,-73.970487, "essAbagel")
+trypoint( 40.75612,-73.97147, "randolph")
 
 
 ###https://people.csail.mit.edu/ericchan/bib/pdf/p275-atherton.pdf
