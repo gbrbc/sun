@@ -33,8 +33,17 @@ Use the formula s = h/tan A to calculate shadow length. See the table below for 
 
 '''
 
+
+def Deb(msg=""):
+  print(f"Debug {sys._getframe().f_back.f_lineno}: {msg}",flush=True)
+  sys.stdout.flush()
+
+
 global icount
 icount=0
+
+debug=0
+
 
 def LINE():
     return "Line: " +  str(sys._getframe(1).f_lineno) + "  "
@@ -71,13 +80,17 @@ pd.set_option('display.max_rows', None)
 #######################READ THE FILE#######################
 
 df = pd.read_csv("path1.csv")
+#df = pd.read_json("pathmn.json")
 df['geometry'] = df['geometry'].apply(loads)
 gdf1 = gpd.GeoDataFrame(df, crs="wgs84")  # Replace "your_crs"
 
-barney=gdf1.to_json(to_wgs84=True)
-filename="/tmp/file_whole2.json"
-with open(filename, "w") as f: # Open file in write mode
-    f.write(barney) # Write data to file    
+gdf1.to_file("/tmp/file_whole2.json",driver='GeoJSON')
+
+
+#barney=gdf1.to_json(to_wgs84=True,orient='table')
+#filename="/tmp/file_whole2.json"
+#with open(filename, "w") as f: # Open file in write mode
+#    f.write(barney+"\n") # Write data to file    
 
 
 
@@ -280,54 +293,96 @@ def try4(fred):
 
 
 
-def trypoint( pointlon,pointlat,namer):
+def trypoint( pointlat,pointlon,namer):
     global icount
 
     # above   pointlon,pointlat,
+    print("-" * 30,"trypoint ",namer)
 
     print(f"lat: {pointlat}, long: {pointlon} name: {namer}")
 
 
+############SANITY  is the point inside any bldg?
+
+##data frame w point we care about    
+    newdf=pd.DataFrame({'longitude': [pointlon], 'latitude': [pointlat]})
+##convert df to geo df
+    geometryp = gpd.GeoDataFrame(newdf,geometry=gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84"))
+
+
+#    for k in range(len(gdf1)):
+#      poly = Polygon(gdf1.iloc[k].geometry)
+#      a=poly.contains(geometryp)
+#      if a.any():
+#          print("Point ",geometryp, " in bldg ",gdf1.iloc[k])
+
+    for item in gdf1['geometry']:
+        newgds=gpd.GeoSeries(item, crs="WGS84")
+        a=newgds.contains(geometryp)
+        if a.any():
+            print(geometryp," in bldg ", item)
+
+        a=geometryp.within(newgds)
+        if a.any():
+            print(geometryp," in w bldg ", item)
+        
+
+
+
+############check if point is inside a shadow from each bldg
+
 
     pointheight = 5;
     shadows = bdshadow_pointlight(gdf1,pointlon,pointlat,pointheight)
-    print("-" * 30)
-    
-    print(LINE(),"  shadows")
-    print(shadows)
-    print(type(shadows))
-    print("-" * 30)
+    if debug > 2:
+        print("-" * 30)
+
+        print(LINE(),"  shadows")
+        print(shadows)
+        print(type(shadows))
+        print("-" * 30)
+
     result = list(shadows['geometry'].iloc[0].exterior.coords)
-    print(LINE(),"result")
-    print(result)
+
+    if debug > 2:
+        print(LINE(),"result")
+        print(result)
 
 ##data frame w point we care about    
     newdf=pd.DataFrame({'longitude': [pointlon], 'latitude': [pointlat]})
 ##convert df to geo df
     geometryp = gpd.GeoDataFrame(newdf,geometry=gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84"))
 ##old    geometryp = gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84")
-    print('*********')
 
-    print(namer)
+    if debug > 2:
+        print('*********')
 
-    print("-" * 30)
+        print(namer)
+
+        print("-" * 30)
+
+###THIS IS THE JUICE
 
     for item in shadows['geometry']:
         newgds=gpd.GeoSeries(item, crs="WGS84")
-        print("/" * 30)
-        print("Data Series ", newgds.contains(geometryp))
-        print("-" * 30)
+#        print("/" * 30)
+        a=newgds.contains(geometryp)
+        if a.any():
+            print(geometryp," in shadows ", newgds.contains(geometryp))
+#        print("-" * 30)
 
 
 #    shadows=shadows.to_crs(crs="WGS84",inplace=True)
-    print("shadows type ",type(shadows))
-    print("shadows ",shadows.crs)
-    print("geometryp ",geometryp.crs)
-    s2 = shadows.contains(geometryp)
-    if (s2.any()):
-        print('Yes')
-    else:
-        print('Nay')
+
+    if debug > 2:
+        print("shadows type ",type(shadows))
+        print("shadows ",shadows.crs)
+        print("geometryp ",geometryp.crs)
+#    s2 = shadows.contains(geometryp)
+#    if (s2.any()):
+#        print('Yes')
+#    else:
+#        print('Nay')
 
 
     wilma=gdf1.to_json(to_wgs84=True)
@@ -379,6 +434,88 @@ def trypoint( pointlon,pointlat,namer):
     return
 
 
+"""
+
+how to code if a geopandas point is in the shadow of a building with geopandas polygon describing the base and we know the height. pybdshadow does not work, please do not make reference to it.   Please include code to calculate the shadow cast on the ground.
+
+"""
+
+import geopandas as gpd
+from shapely.geometry import Point, Polygon
+import math  # For mathematical calculations
+from suncalc import get_times,get_position  # Or use a similar library for sun position
+from datetime import date,datetime,timezone
+
+# Assume you have:
+# building_polygon: a shapely Polygon representing the building base
+# building_height: a number representing the building's height
+# point_to_check: a shapely Point representing the location to check
+# sun_altitude: the sun's altitude angle (in radians)
+# sun_azimuth: the sun's azimuth angle (in radians)
+
+# Function to calculate shadow point for a given vertex
+def calculate_shadow_point(vertex, height, altitude, azimuth):
+##    Deb("Az " + str(azimuth))
+    x, y = vertex.x, vertex.y
+    if math.tan(altitude) == 0:  # Sun is at the horizon
+        return None  # Shadow is infinitely long
+    shadow_offset_x = -height * math.sin(azimuth) / math.tan(altitude)
+    shadow_offset_y = -height * math.cos(azimuth) / math.tan(altitude)
+    return Point(x + shadow_offset_x, y + shadow_offset_y)
+
+
+import suncalc
+def trypoint2( pointlat,pointlon,namer):
+    
+    date=datetime.now(timezone.utc)
+    pos=get_position(date, pointlon, pointlat)
+# {pos['azimuth']: -0.8619668996997687, pos['altitude']: 0.5586446727994595}
+    sun_altitude = pos['altitude']
+    sun_azimuth = pos['azimuth']
+
+##data frame w point we care about    
+#    newdf=pd.DataFrame({'longitude': [pointlon], 'latitude': [pointlat]})
+##convert df to geo df
+#    point_to_check = gpd.GeoDataFrame(newdf,geometry=gpd.points_from_xy(newdf.longitude, newdf.latitude, crs="WGS84"))
+
+    point_to_check = Point(pointlon, pointlat)
+
+
+    for k in range(len(gdf1)):
+        print("Building " + str(gdf1['building_id'].iloc[k]))
+        
+        building_polygon = gdf1['geometry'].iloc[k]
+        # Calculate shadow points for each vertex of the building's base
+        shadow_vertices = []
+        building_height=gdf1['height'].iloc[k]
+        np=0                    # # of points
+        nv=0                    # of verticies
+        for vertex in building_polygon.exterior.coords:
+            np=1+np
+            shadow_point = calculate_shadow_point(Point(vertex), building_height, sun_altitude, sun_azimuth)
+            if shadow_point:
+                nv=1+nv
+                shadow_vertices.append(shadow_point)
+#        Deb("Points " + str(np) + " Verts " + str(nv))
+
+        # Create the shadow polygon (handle wall shadows if necessary)
+        # This part might require more complex geometry operations depending on the building's shape
+        # For a simple rectangular building, the shadow polygon can be formed by connecting the shadow vertices
+
+        # Create the shadow polygon
+        shadow_polygon = Polygon(shadow_vertices)
+
+        # Check if the point is inside the shadow polygon
+#        Deb("point "+str(type(point_to_check)))
+        is_in_shadow = shadow_polygon.contains(point_to_check)
+
+        print(f"Is the point in the shadow? {is_in_shadow}")
+
+
+
+
+
+
 
 
 #try2()
@@ -389,11 +526,18 @@ def trypoint( pointlon,pointlat,namer):
 #tryreport()
 
 
-#trypoint( 40.755515,-73.971029,  "mcds")
-#trypoint( 40.756133,-73.970579,  "real mcds")
-#trypoint( 40.756751,-73.970085, "jpmwealth")
-#trypoint( 40.756015,-73.970487, "essAbagel")
-trypoint( 40.75612,-73.97147, "randolph")
+trypoint2( 40.755515,-73.971029,  "mcds")
+trypoint2( 40.756133,-73.970579,  "real mcds")
+trypoint2( 40.756751,-73.970085, "jpmwealth")
+trypoint2( 40.756015,-73.970487, "essAbagel")
+trypoint2( 40.75629,-73.97025, "essDoor")
+trypoint2( 40.75612,-73.97147, "randolph")
+trypoint2( 40.75624,-73.97159, "randolphfrontdoor")
+trypoint2( 40.756684,-73.97130, "51st")
+
+
+
+
 
 
 ###https://people.csail.mit.edu/ericchan/bib/pdf/p275-atherton.pdf
