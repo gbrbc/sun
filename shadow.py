@@ -2,7 +2,7 @@ import sys
 import os
 import pandas as pd
 
-import geopandas as gpd
+import geopandas as gpd            
 import numpy as np
 
 from pybdshadow import *
@@ -14,6 +14,11 @@ import matplotlib.pyplot as plt
 
 from shapely  import wkt
 from shapely.wkt  import loads
+from shapely.geometry  import Polygon,mapping
+
+
+import json
+
 
 # in Jupyter this lets us show the figures, but not interactively
 ##%matplotlib inline
@@ -25,6 +30,10 @@ from shapely.geometry import Point, LineString, Polygon
 ## https://github.com/s-bear/sun-position
 
 #https://www.fs.usda.gov/nac/buffers/guidelines/5_protection/6.html#:~:text=Use%20the%20formula%20s%20%3D%20h,shadow%20direction%20on%20the%20ground.
+
+heknows = []
+counter=0
+
 
 '''
 Use the formula s = h/tan A to calculate shadow length. See the table below for an example. Sun angle calculators are available on the Web which will provide the sun angle (A) and azimuth angle for a given location based on the date and time.
@@ -49,6 +58,28 @@ def LINE():
     return "Line: " +  str(sys._getframe(1).f_lineno) + "  "
 
 
+
+###NEEDS A FIX TO not use now when a value was given in command line
+### so this can be tested at night
+
+
+def gettime(anarg):
+    print( len(sys.argv))
+
+    if anarg == 'now':
+        return datetime.now(timezone.utc)
+
+###only drop down here if now wasn't passed as arg
+###in the hope that it would be in argv
+
+    if len(sys.argv) > 1:
+        return pd.to_datetime(sys.argv[1],format='mixed').tz_localize('America/New_York').tz_convert('UTC')
+    else:
+      print('die')
+      exit()
+
+#        return pd.to_datetime(anarg,format='%Y-%m-%d').tz_localize('America/New_York').tz_convert('UTC')
+#    date=pd.to_datetime(anarg,format='%Y-%m-%d').tz_localize('America/New_York').tz_convert('UTC')
 
 ##arg1 is the geometry
 def convert_multipolygon(gdf9):
@@ -190,7 +221,7 @@ def try2():
 #    print(gdf1,try4(gdf1.iloc[0,0]))
     gdf1.iloc[0,0] = gdf_convex_hull.iloc[0,1]
     bambam=gdf_convex_hull.to_json(to_wgs84=True)
-    print(LINE(),'bambam')
+    Deb('bambam')
     print(LINE(),' postassign ', gdf1.head())
     print(LINE(),' postassign ', gdf1.iloc[0])
 #    print(gdf1,try4(gdf1.iloc[0,0]))
@@ -378,11 +409,6 @@ def trypoint( pointlat,pointlon,namer):
         print("shadows type ",type(shadows))
         print("shadows ",shadows.crs)
         print("geometryp ",geometryp.crs)
-#    s2 = shadows.contains(geometryp)
-#    if (s2.any()):
-#        print('Yes')
-#    else:
-#        print('Nay')
 
 
     wilma=gdf1.to_json(to_wgs84=True)
@@ -399,37 +425,6 @@ def trypoint( pointlat,pointlon,namer):
 
 
 #    print(wilma)
-
-
-    return
-##    exit()
-    for building_id,geometry, in shadows.items():
-        print("Column name ", type(geometry))
-        print("building_id ", type(building_id))
-        print(building_id)
-        print("-" * 30)
-        print(LINE(),"geometry ")        
-        print(type(geometry))
-        print(geometry)
-        print("+" * 30)
-
-        newgds=gpd.GeoSeries(geometry)
-        print("/" * 30)
-        print("Data Series ", newgds.contains(geometryp))
-        print("-" * 30)
-
-
-
-
-    if (shadows.contains(geometryp)):
-        print('Yes')
-    else:
-        print('Nay')
-
-
-
-
-    print('*********')
 
     return
 
@@ -463,15 +458,64 @@ def calculate_shadow_point(vertex, height, altitude, azimuth):
     shadow_offset_y = -height * math.cos(azimuth) / math.tan(altitude)
     return Point(x + shadow_offset_x, y + shadow_offset_y)
 
+#########NEW TOY MAPPING############
+def trymap(polyarg,i):
+
+    if  i < 4:
+      print(f"Barney: Is polygon_valid valid? {polyarg.is_valid}")
+
+    if i == 18:
+      print("Reversed huh  :")
+      print(polyarg)
+      mydf=pd.DataFrame([polyarg])
+      geometryp = gpd.GeoDataFrame(geometry=[polyarg],crs="EPSG:4326")
+#WGS84
+#      dino=geometryp.to_json()
+      geometryp.to_file('/tmp/dino.json')
+
+
+
+    if not polyarg.is_valid:
+      print("Barney can # " + str(i))
+    
+    poly_mapped=mapping(polyarg)
+    poly_coordinates = poly_mapped['coordinates'][0]
+
+    poly_ = [{'lat': coords[1],'lon': coords[0]} for coords in poly_coordinates]
+
+    betty=json.dumps(poly_)
+    filename="/tmp/he" + str(i) + ".json"
+    with open(filename, "w") as f: # Open file in write mode
+        f.write(betty) # Write data to file    
+
+
+from GBRshapely import *
+
+
+
+#######SUPPORT FOR SWAP LAT LONG###########
+
+def swappoint(apoint):
+    return([apoint.y,apoint.x])
+
+def swaplist(alist):
+    retrn=[]
+    for m in alist:
+        retrn.append(swappoint(m))
+    return retrn
+
+
 
 import suncalc
 def trypoint2( pointlat,pointlon,namer):
-    
+    global counter
     date=datetime.now(timezone.utc)
     pos=get_position(date, pointlon, pointlat)
 # {pos['azimuth']: -0.8619668996997687, pos['altitude']: 0.5586446727994595}
     sun_altitude = pos['altitude']
     sun_azimuth = pos['azimuth']
+    sun_altitude = 10.84;
+    sun_azimuth =  154.084271;
 
 ##data frame w point we care about    
 #    newdf=pd.DataFrame({'longitude': [pointlon], 'latitude': [pointlat]})
@@ -492,6 +536,7 @@ def trypoint2( pointlat,pointlon,namer):
         nv=0                    # of verticies
         for vertex in building_polygon.exterior.coords:
             np=1+np
+            print("Jelly " +str(np)+"   "+str(vertex))
             shadow_point = calculate_shadow_point(Point(vertex), building_height, sun_altitude, sun_azimuth)
             if shadow_point:
                 nv=1+nv
@@ -501,9 +546,54 @@ def trypoint2( pointlat,pointlon,namer):
         # Create the shadow polygon (handle wall shadows if necessary)
         # This part might require more complex geometry operations depending on the building's shape
         # For a simple rectangular building, the shadow polygon can be formed by connecting the shadow vertices
+        if nv==10:
+          Deb("BamBam v")
+          print(type(shadow_vertices))
+
+          newv=[]
+
+          for mitem in shadow_vertices:
+            newv.append([mitem.y,mitem.x])
+#            print(type(mitem))
+
+        fname="/tmp/bam"+str(nv)+".json"
+        fshade="/tmp/shade"+str(nv)+".json"
+        fw="/tmp/weas"+str(nv)+".json"
 
         # Create the shadow polygon
         shadow_polygon = Polygon(shadow_vertices)
+        shady=Polygon(swaplist(shadow_vertices))
+        if nv==10:
+          Deb("BamBam")
+          print(shadow_polygon)
+          ###          shadow_polygon = shadow_polygon.apply(lambda point: shapely.ops.transform(lambda x, y: (y, x), point))
+
+
+###BUG
+###
+###shadow_vertices is a set of points
+###and when it becomes a polygon it
+### is no longer in long/lat
+
+
+
+        amydf=pd.DataFrame([shadow_polygon])
+        shadyamydf=pd.DataFrame([shady])
+        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+        shadybambam=gpd.GeoDataFrame(geometry=[shady], crs="WGS84")
+        Deb("Shady there?")
+        is_in_shadow = point_to_check.within(shady)
+        print(f"Is the point in the shady  shadow? {is_in_shadow}")
+
+        is_in_shadow = point_to_check.within(shadybambam)
+        print(f"Is the point in the shady bambam  shadow? {is_in_shadow}")
+        
+
+
+        bambam.to_file(fname)
+        shadybambam.to_file(fshade)
+#        with open(fname, "w") as f: # Open file in write mode
+#          bambam.dump(shadow_polygon,f,indent=4)
 
         # Check if the point is inside the shadow polygon
 #        Deb("point "+str(type(point_to_check)))
@@ -512,13 +602,31 @@ def trypoint2( pointlat,pointlon,namer):
         print(f"Is the point in the shadow? {is_in_shadow}")
 
 
+        is_in_shadow = point_to_check.within(shadow_polygon)
+
+        print(f"Is the point in the w  shadow? {is_in_shadow}")
+
+#        print(shadow_polygon)
+#        gdfpoly=gpd.GeoDataFrame(shadow_polygon,crs="EPSG:4326")
+#        gdfpoly.to_file("/tmp/file_whole3.json",driver='GeoJSON')
+        heknows.append(shadow_polygon)
+#        heknows.to_file("/tmp/he" + str(counter) + ".json")
+#        heknows.json_dumps("/tmp/he" + str(counter) + ".json")
 
 
-
-
+##24Jun        trymap(shadow_polygon,counter)
+        print("Betty " + str(counter))
+        counter=counter+1
 
 
 #try2()
+
+
+
+
+
+
+
 
 
 ###the file read run first, without and calls to subroutines
@@ -526,14 +634,14 @@ def trypoint2( pointlat,pointlon,namer):
 #tryreport()
 
 
-trypoint2( 40.755515,-73.971029,  "mcds")
-trypoint2( 40.756133,-73.970579,  "real mcds")
-trypoint2( 40.756751,-73.970085, "jpmwealth")
-trypoint2( 40.756015,-73.970487, "essAbagel")
-trypoint2( 40.75629,-73.97025, "essDoor")
-trypoint2( 40.75612,-73.97147, "randolph")
+#trypoint2( 40.755515,-73.971029,  "mcds")
+#trypoint2( 40.756133,-73.970579,  "real mcds")
+#trypoint2( 40.756751,-73.970085, "jpmwealth")
+#trypoint2( 40.756015,-73.970487, "essAbagel")
+#trypoint2( 40.75629,-73.97025, "essDoor")
+#trypoint2( 40.75612,-73.97147, "randolph")
 trypoint2( 40.75624,-73.97159, "randolphfrontdoor")
-trypoint2( 40.756684,-73.97130, "51st")
+#trypoint2( 40.756684,-73.97130, "51st")
 
 
 
@@ -548,3 +656,23 @@ trypoint2( 40.756684,-73.97130, "51st")
 ## https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue/about_data
 ## SHAPE_AREA  Measures the enclosed area within a polygon.
 ## 
+print(heknows)
+
+#gdfpoly=gpd.GeoDataFrame(heknows, geometry=0,crs="EPSG:4326")
+gdfpoly=gpd.GeoDataFrame(heknows, geometry=0,crs="WGS84")
+gdfpoly.to_file("/tmp/file_whole5.json")
+#,driver='GeoJSON',crs="WGS84")
+exit()
+betty=gdfpoly.to_json(to_wgs84=True)
+with open("/tmp/file_whol3.shp", "w") as f: # Open file in write mode
+  f.write(betty) # Write data to file    
+
+##  KML, GPX, CSV, GTFS,
+
+
+
+
+"""
+
+with a polygon describing the footprint of a building, and having the height of the building, and the altitude and azimuth of the sun, how do I produce a polygon of long/lat describing the shadow? Is there "OPEN SOURCE SOFTWARE" library routine that does this?
+"""
