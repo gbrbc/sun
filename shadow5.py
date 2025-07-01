@@ -8,7 +8,12 @@ import geopandas as gpd
 import subprocess
 import numpy as np
 
-mylist2d=[
+
+
+
+
+
+mylist2d0=[
 [ 40.755515,-73.971029,  "mcds"],
 [ 40.756133,-73.970579,  "real mcds"],
 [ 40.756751,-73.970085, "jpmwealth"],
@@ -18,18 +23,23 @@ mylist2d=[
 [ 40.75624,-73.97159, "randolphfrontdoor"],
 [ 40.756684,-73.97130, "51st"], ]
 
-#mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
+mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
 
 
 places_to_check=np.array(mylist2d)              # look for shadows in these locations
 
+## function for debugging
+#
+# more details
+#
 def Deb(msg=""):
   print(f"Debug {sys._getframe().f_back.f_lineno}: {msg}",flush=True)
   sys.stdout.flush()
 
 
 
-# Function to extract coordinates from the MultiPolygon
+## Function to extract coordinates from the MultiPolygon
+#
 def to_coords(multipolygon):
     """
     Extracts coordinates from a MultiPolygon object, including holes.
@@ -48,6 +58,8 @@ def to_coords(multipolygon):
     return coords_list
 
 
+## unused
+#
 def convert_multipolygon(gdf9):
     gdf_approx = gpd.GeoDataFrame({'id': [1], 'geometry': [gdf9]}, crs="EPSG:3857")
 
@@ -61,6 +73,8 @@ def convert_multipolygon(gdf9):
 
 
 
+## calc shadow
+# 
 def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, sun_azimuth_deg, sun_altitude_deg, central_lat, central_lon):
     """
     Calculates the shadow polygon of a building.
@@ -222,7 +236,7 @@ df = pd.read_csv("/Src/sun/path1.csv",sep=',')
 
 df['geometry'] = df['geometry'].apply(loads)
 
-gdf1 = gpd.GeoDataFrame(df, crs="EPSG:3857")  # Replace "your_crs"
+gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
 
 #gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
@@ -242,7 +256,7 @@ for row in df.itertuples(index=False):
     assert geoval.all()
 
     bname="/tmp/bldg"+str(m)+".json"
-    pebbles=gdf1.to_json(to_wgs84=False)  #  crs="EPSG:3857"
+    pebbles=gdf1.to_json(to_wgs84=True)  #  crs="WGS84"
     with open(bname,"w") as w:
       w.write(pebbles)
 
@@ -271,10 +285,10 @@ for row in df.itertuples(index=False):
 
     if k==0:
         Deb(row[0])
-        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="EPSG:3857")
+        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="WGS84")
         geoval=dshit.geometry.is_valid
         assert geoval.all()     # other choice .all()
-        barney=dshit.to_json(to_wgs84=False)  #  crs="EPSG:3857"
+        barney=dshit.to_json(to_wgs84=True)  #  crs="WGS84"
         with open("/tmp/dshit.json","w") as w:
             w.write(barney)
    
@@ -308,22 +322,22 @@ for row in df.itertuples(index=False):
 #        elif isinstance(shadow_polygon, MultiPolygon):
 #            for i, poly in enumerate(shadow_polygon.geoms):
 #                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
-#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="EPSG:3857")
+#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
 #        bambam.to_file("/tmp/bambam.json")
         for (mylong,mylat,myname) in places_to_check:
 ### write shadow file for randolph
 
             if myname == "randolphfrontdoor" and row[1]=="Randolph":
               frname="/tmp/ran"+str(m)+".json"
-              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="EPSG:3857")
+              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
               geoval=bambam.geometry.is_valid
               assert geoval.all()     # other choice .all()
-              dino=bambam.to_json(to_wgs84=False)
+              dino=bambam.to_json(to_wgs84=True)
               with open(frname,"w") as w:
                 w.write(dino)
 
 
-#              bambam.to_file(frname,crs="EPSG:3857")
+#              bambam.to_file(frname,crs="WGS84")
               m=m+1
               print("Datar\t"+str(row[5])+"\t"+frname)
 
@@ -351,5 +365,19 @@ I am trying to find a solution in a well-respected library, not something de nov
 """
 
 def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, sun_azimuth_deg, sun_altitude_deg, central_lat, central_lon):
+
+"""
+
+"""@package docstring
+see page 43 (paper 26) of doxygen manual
+ then p 296  paper 278
+
+"""
+
+
+
+"""@bug
+why does long/lat for 135 e 50th show up in arcgis & geojson in BK?
+
 
 """
