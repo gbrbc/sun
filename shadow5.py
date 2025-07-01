@@ -6,12 +6,46 @@ import pyproj
 import math
 import geopandas as gpd            
 import subprocess
+import numpy as np
+
+mylist2d0=[
+[ 40.755515,-73.971029,  "mcds"],
+[ 40.756133,-73.970579,  "real mcds"],
+[ 40.756751,-73.970085, "jpmwealth"],
+[ 40.756015,-73.970487, "essAbagel"],
+[ 40.75629,-73.97025, "essDoor"],
+[ 40.75612,-73.97147, "randolph"],
+[ 40.75624,-73.97159, "randolphfrontdoor"],
+[ 40.756684,-73.97130, "51st"], ]
+
+mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
 
 
+places_to_check=np.array(mylist2d)              # look for shadows in these locations
 
 def Deb(msg=""):
   print(f"Debug {sys._getframe().f_back.f_lineno}: {msg}",flush=True)
   sys.stdout.flush()
+
+
+
+# Function to extract coordinates from the MultiPolygon
+def to_coords(multipolygon):
+    """
+    Extracts coordinates from a MultiPolygon object, including holes.
+
+    Args:
+        multipolygon: A Shapely MultiPolygon object.
+
+    Returns:
+        A list of coordinate tuples.
+    """
+    coords_list = []
+    for polygon in multipolygon.geoms:
+        coords_list.extend(list(polygon.exterior.coords[:-1]))
+        for interior in polygon.interiors:
+            coords_list.extend(list(interior.coords[:-1]))
+    return coords_list
 
 
 def convert_multipolygon(gdf9):
@@ -143,7 +177,14 @@ point_to_check = Point(central_lon,central_lat)
 
 # Sun position (example: afternoon sun, southwest direction)
 
-result = subprocess.run("spa2py " + str(central_lon) + " " + str(central_lat), capture_output=True, text=True, shell=True, check=True)
+#Possible time to pass to spa2py
+zulu=""
+if len(sys.argv) > 1:
+    zulu=sys.argv[1]
+
+print("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu)
+
+result = subprocess.run("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu, capture_output=True, text=True, shell=True, check=True)
 aresult=result.stdout
 
 
@@ -153,6 +194,23 @@ sun_altitude=float(sun_altitude1)+0.0
 #sun_azimuth = 144.71 # degrees (South-West)
 #sun_altitude = 13.48 # degrees
 
+
+#####@MAINPAGE
+"""
+for each bldg
+   take their multip
+   convert it to tuples w to_coords
+         GOES WRONG HERE
+         gpd from the coords no match for input
+
+
+   use this and a point to predict a shadow
+
+
+
+
+
+"""
 
 
 import pandas as pd
@@ -166,30 +224,60 @@ df['geometry'] = df['geometry'].apply(loads)
 
 gdf1 = gpd.GeoDataFrame(df, crs="wgs84")  # Replace "your_crs"
 
-gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
+#gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
-Deb(gdf1.iloc[0][0])
+#Deb(gdf1.iloc[0][0])
 
 #for k in range(len(df)):
 #    print("Df ",df.iloc[k][0])
 #    print("Gdf1 ",gdf1.iloc[k][0])
 
 k=0
-
+m=0
 for row in df.itertuples(index=False):
-    Deb('Bldg ' + str(row[5]))
+    Deb('Bldg ' + str(row[5]) + " " + str(row[1]))
 
 
-    apoly=Polygon(gdf1.iloc[k][0])
-    list1=list(apoly.exterior.coords[:-1])
-    list2=[]
-#    Deb("interiors len " + str(len(apoly.interiors)))
-    if len(apoly.interiors) > 0:
-        list2=list(apoly.interiors[0].coords[:-1])    
-        list1=list1+list2
+    geoval=gdf1.geometry.is_valid
+    assert geoval.all()
 
+    bname="/tmp/bldg"+str(m)+".json"
+    pebbles=gdf1.to_json(to_wgs84=True)  #  crs="wgs84"
+    with open(bname,"w") as w:
+      w.write(pebbles)
 
+##    apoly=Polygon(gdf1.iloc[k][0])
+    if 0:
+        list1=list(apoly.exterior.coords[:-1])
+        list2=[]
+    #    Deb("interiors len " + str(len(apoly.interiors)))
+        if len(apoly.interiors) > 0:
+            list2=list(apoly.interiors[0].coords[:-1])    
+            list1=list1+list2
+            Deb("interiors len " + str(len(apoly.interiors)))
+        if row[5]==1013050060:
+            with open("/tmp/ge","w") as ge:
+                for item in list1:
+                  ge.write(str(item) + "\n")
+    #        print("List1 size " + len(list1))
 
+#    Deb(apoly)
+#    apolyboom=apoly.explode()
+
+##    assert apoly.is_valid
+
+    list1=to_coords(row[0])
+    Deb(list1)
+
+    if k==0:
+        Deb(row[0])
+        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="wgs84")
+        geoval=dshit.geometry.is_valid
+        assert geoval.all()     # other choice .all()
+        barney=dshit.to_json(to_wgs84=True)  #  crs="wgs84"
+        with open("/tmp/dshit.json","w") as w:
+            w.write(barney)
+   
     shadow_polygon = calculate_building_shadow(
         list1,
         row[11],
@@ -199,16 +287,47 @@ for row in df.itertuples(index=False):
         central_lon
     )
 
+
+
     if shadow_polygon:
-        print("Shadow Polygon (Long/Lat):")
-        if isinstance(shadow_polygon, Polygon):
-            print(list(shadow_polygon.exterior.coords))
-        elif isinstance(shadow_polygon, MultiPolygon):
-            for i, poly in enumerate(shadow_polygon.geoms):
-                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
-        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
-        bambam.to_file("/tmp/bambam.json")
-        if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]))
+      if not shadow_polygon.is_valid:
+        Deb(k)
+        Deb(row[1])
+        Deb(row[5])
+        Deb(shadow_polygon)
+
+    if shadow_polygon:
+      assert shadow_polygon.is_valid
+
+
+    if shadow_polygon:
+#        print("Shadow Polygon (Long/Lat):")
+#        if isinstance(shadow_polygon, Polygon):
+#            print(list(shadow_polygon.exterior.coords))
+#        elif isinstance(shadow_polygon, MultiPolygon):
+#            for i, poly in enumerate(shadow_polygon.geoms):
+#                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
+#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+#        bambam.to_file("/tmp/bambam.json")
+        for (mylong,mylat,myname) in places_to_check:
+### write shadow file for randolph
+
+            if myname == "randolphfrontdoor" and row[1]=="Randolph":
+              frname="/tmp/ran"+str(m)+".json"
+              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+              geoval=bambam.geometry.is_valid
+              assert geoval.all()     # other choice .all()
+              dino=bambam.to_json(to_wgs84=True)
+              with open(frname,"w") as w:
+                w.write(dino)
+
+
+#              bambam.to_file(frname,crs="wgs84")
+              m=m+1
+              print("Datar\t"+str(row[5])+"\t"+frname)
+
+            point_to_check = Point(mylong,mylat)
+            if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
 #        if k == 0:
 #            combo = shadow_polygon
 #        else:
@@ -219,3 +338,17 @@ for row in df.itertuples(index=False):
         print("No shadow cast (sun at or below horizon).")
 
     k=k+1
+
+"""
+I am trying to find a solution in a well-respected library, not something de novo.   I am trying to convert a multipolygon to a set of polygons to use as input to library routines.  What I keep finding as solutions iterating through geoms/exterior/coords and then through interiors.  When I visualize the multipolygon and the resulting polygons in ArcGIS they are kilometers apart.  Is there an open source solution I am not finding?
+
+
+"""
+
+
+
+"""
+
+def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, sun_azimuth_deg, sun_altitude_deg, central_lat, central_lon):
+
+"""
