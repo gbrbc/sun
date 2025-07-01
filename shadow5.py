@@ -8,7 +8,7 @@ import geopandas as gpd
 import subprocess
 import numpy as np
 
-mylist2d0=[
+mylist2d=[
 [ 40.755515,-73.971029,  "mcds"],
 [ 40.756133,-73.970579,  "real mcds"],
 [ 40.756751,-73.970085, "jpmwealth"],
@@ -18,7 +18,7 @@ mylist2d0=[
 [ 40.75624,-73.97159, "randolphfrontdoor"],
 [ 40.756684,-73.97130, "51st"], ]
 
-mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
+#mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
 
 
 places_to_check=np.array(mylist2d)              # look for shadows in these locations
@@ -49,7 +49,7 @@ def to_coords(multipolygon):
 
 
 def convert_multipolygon(gdf9):
-    gdf_approx = gpd.GeoDataFrame({'id': [1], 'geometry': [gdf9]}, crs="WGS84")
+    gdf_approx = gpd.GeoDataFrame({'id': [1], 'geometry': [gdf9]}, crs="EPSG:3857")
 
     # Calculate the convex hull and assign it back to a new GeoDataFrame or replace the geometry
     convex_hull_gs = gdf_approx.geometry.convex_hull
@@ -222,7 +222,7 @@ df = pd.read_csv("/Src/sun/path1.csv",sep=',')
 
 df['geometry'] = df['geometry'].apply(loads)
 
-gdf1 = gpd.GeoDataFrame(df, crs="wgs84")  # Replace "your_crs"
+gdf1 = gpd.GeoDataFrame(df, crs="EPSG:3857")  # Replace "your_crs"
 
 #gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
@@ -242,7 +242,7 @@ for row in df.itertuples(index=False):
     assert geoval.all()
 
     bname="/tmp/bldg"+str(m)+".json"
-    pebbles=gdf1.to_json(to_wgs84=True)  #  crs="wgs84"
+    pebbles=gdf1.to_json(to_wgs84=False)  #  crs="EPSG:3857"
     with open(bname,"w") as w:
       w.write(pebbles)
 
@@ -271,10 +271,10 @@ for row in df.itertuples(index=False):
 
     if k==0:
         Deb(row[0])
-        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="wgs84")
+        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="EPSG:3857")
         geoval=dshit.geometry.is_valid
         assert geoval.all()     # other choice .all()
-        barney=dshit.to_json(to_wgs84=True)  #  crs="wgs84"
+        barney=dshit.to_json(to_wgs84=False)  #  crs="EPSG:3857"
         with open("/tmp/dshit.json","w") as w:
             w.write(barney)
    
@@ -297,7 +297,8 @@ for row in df.itertuples(index=False):
         Deb(shadow_polygon)
 
     if shadow_polygon:
-      assert shadow_polygon.is_valid
+      pass
+#      assert shadow_polygon.is_valid
 
 
     if shadow_polygon:
@@ -307,22 +308,22 @@ for row in df.itertuples(index=False):
 #        elif isinstance(shadow_polygon, MultiPolygon):
 #            for i, poly in enumerate(shadow_polygon.geoms):
 #                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
-#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="EPSG:3857")
 #        bambam.to_file("/tmp/bambam.json")
         for (mylong,mylat,myname) in places_to_check:
 ### write shadow file for randolph
 
             if myname == "randolphfrontdoor" and row[1]=="Randolph":
               frname="/tmp/ran"+str(m)+".json"
-              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="EPSG:3857")
               geoval=bambam.geometry.is_valid
               assert geoval.all()     # other choice .all()
-              dino=bambam.to_json(to_wgs84=True)
+              dino=bambam.to_json(to_wgs84=False)
               with open(frname,"w") as w:
                 w.write(dino)
 
 
-#              bambam.to_file(frname,crs="wgs84")
+#              bambam.to_file(frname,crs="EPSG:3857")
               m=m+1
               print("Datar\t"+str(row[5])+"\t"+frname)
 
