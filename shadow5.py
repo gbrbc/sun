@@ -114,7 +114,7 @@ def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, 
 
 
     local_proj_string = (
-        f"+proj=cea +lat_0={central_lat} +lon_0={central_lon} "
+        f"+proj=tmerc +lat_0={central_lat} +lon_0={central_lon} "
         "+k=1.0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
     )
     crs_local = pyproj.CRS(local_proj_string)
@@ -341,7 +341,7 @@ for fake in range(1,8):
 
             dshit["centroid"]= dshit.to_crs('+proj=cea').centroid.to_crs(dshit.crs)
 
-    #        Deb(dshit["centroid"].x)
+
 
         shadow_polygon = calculate_building_shadow(
           list1,
@@ -371,7 +371,11 @@ for fake in range(1,8):
         #      assert shadow_polygon.is_valid
 
 
-        if shadow_polygon:
+#needed?        if shadow_polygon:
+
+
+
+##EPSG:4326
           #        print("Shadow Polygon (Long/Lat):")
           #        if isinstance(shadow_polygon, Polygon):
           #            print(list(shadow_polygon.exterior.coords))
@@ -381,71 +385,72 @@ for fake in range(1,8):
           #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
           #        bambam.to_file("/tmp/bambam.json")
 
+        frname="/tmp/shadow"+str(fake)+".json"
+        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+        geoval=bambam.geometry.is_valid
+        #                assert geoval.all()     # other choice .all()
+        if not geoval.all():
+          Deb("Skipping shadow " + str(k))
 
-            """!
-            @page page3 check each shadow target
-            against each building
-            for now each shadow is written as json
-            to /tmp/shadow..
-            In future it should only be for
-            shadows that have a target in them
+        dino=bambam.to_json(to_wgs84=False) #True)
+        Deb("Writing " + frname)
+        with open(frname,"w") as w2:
+          w2.write(dino)
+          w2.close()
 
-            NB that Point takes lat/long
-
-            /tmp/bimbo... is file with point
-
-            
-
-
-            """
-
-            for (mylong,mylat,myname) in places_to_check:
-              ### write shadow file for randolph
-
-    #            if myname == "randolphfrontdoor" and row[1]=="Randolph":
-
-
-    ###################################
-                frname="/tmp/shadow"+str(fake)+".json"
-                bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
-                geoval=bambam.geometry.is_valid
-                #                assert geoval.all()     # other choice .all()
-                if not geoval.all():
-                  Deb("Skipping shadow " + str(k))
-
-                dino=bambam.to_json(to_wgs84=False) #True)
-                Deb("Writing " + frname)
-                with open(frname,"w") as w2:
-                  w2.write(dino)
-                  w2.close()
-
-      #              bambam.to_file(frname,crs="WGS84")
-                m=m+1
-                print("Datar\t"+str(row[5])+"\t"+frname)
-
-    ###was randolph if
-
-    ##################################
-
-
-
-
-                point_to_check = Point(mylat,mylong)  ###GBR check this
-                bimbo = gpd.GeoDataFrame(geometry=[point_to_check], crs="WGS84")
-                dino=bimbo.to_file("/tmp/bimbo.json",driver="GeoJSON")
-
-                if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
-                #        if k == 0:
-                #            combo = shadow_polygon
-                #        else:
-                #            combo = gpd.GeoDataFrame(pd.concat([combo,shadow_polygon], ignore_index=True))
-                #https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
-
-        else:
-          print("No shadow cast (sun at or below horizon).")
-
-        k=k+1
+#              bambam.to_file(frname,crs="WGS84")
         m=m+1
+        print("Datar\t"+str(row[5])+"\t"+frname)
+
+
+
+
+        """!
+        @page page3 check each shadow target
+        against each building
+        for now each shadow is written as json
+        to /tmp/shadow..
+        In future it should only be for
+        shadows that have a target in them
+
+        NB that Point takes lat/long
+
+        /tmp/bimbo... is file with point
+
+
+
+
+        """
+
+        for (mylong,mylat,myname) in places_to_check:
+          ### write shadow file for randolph
+
+#            if myname == "randolphfrontdoor" and row[1]=="Randolph":
+
+
+###################################
+
+###was randolph if
+
+##################################
+
+
+
+
+            point_to_check = Point(mylat,mylong)  ###GBR check this
+            bimbo = gpd.GeoDataFrame(geometry=[point_to_check], crs="WGS84")
+            dino=bimbo.to_file("/tmp/bimbo.json",driver="GeoJSON")
+
+            if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
+            #        if k == 0:
+            #            combo = shadow_polygon
+            #        else:
+            #            combo = gpd.GeoDataFrame(pd.concat([combo,shadow_polygon], ignore_index=True))
+            #https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
+
+
+    k=k+1
+    m=m+1
 
 """
 I am trying to find a solution in a well-respected library, not something de novo.   I am trying to convert a multipolygon to a set of polygons to use as input to library routines.  What I keep finding as solutions iterating through geoms/exterior/coords and then through interiors.  When I visualize the multipolygon and the resulting polygons in ArcGIS they are kilometers apart.  Is there an open source solution I am not finding?
