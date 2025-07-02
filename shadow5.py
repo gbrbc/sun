@@ -1,4 +1,4 @@
-import os,sys
+import sys
 from shapely.geometry import Polygon, MultiPolygon, Point
 from shapely.affinity import translate
 from shapely.wkt import loads
@@ -7,7 +7,7 @@ import math
 import geopandas as gpd            
 import subprocess
 import numpy as np
-
+import pandas as pd
 
 
 
@@ -27,6 +27,9 @@ mylist2d=[[ 40.75624,-73.97159, "randolphfrontdoor"]]
 
 
 places_to_check=np.array(mylist2d)              # look for shadows in these locations
+
+bigone=gpd.GeoDataFrame()
+
 
 ## function for debugging
 #
@@ -233,7 +236,7 @@ for each bldg
 """
 
 
-import pandas as pd
+
 """!
 @page page1 MainLoop Start here
 
@@ -277,9 +280,10 @@ for fake in range(1,8):
         geoval=gdf1.geometry.is_valid
         assert geoval.all()
 
-        bname="/tmp/bldg"+str(m)+".json"
+        bname="/tmp/bldg"+str(fake)+".json"
         pebbles=gdf1.to_json(to_wgs84=False   )  #True)  #  crs="WGS84"
-        if not pebbles: asd=4/0
+        if not pebbles:
+            asd=4/0
         Deb("Writing peb "+bname)
         with open(bname,"w") as w:
             w.write(pebbles)
@@ -385,12 +389,21 @@ for fake in range(1,8):
           #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
           #        bambam.to_file("/tmp/bambam.json")
 
+#        SHADOWPROJ="EPSG:4326"
+        SHADOWPROJ="EPSG:2263"
         frname="/tmp/shadow"+str(fake)+".json"
-        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs=SHADOWPROJ)
+        bambam=bambam.to_crs(SHADOWPROJ)
+
         geoval=bambam.geometry.is_valid
         #                assert geoval.all()     # other choice .all()
         if not geoval.all():
           Deb("Skipping shadow " + str(k))
+
+        concat=gpd.GeoDataFrame()
+        concat=pd.concat([bigone,bambam],ignore_index=True)
+        bigone=concat
+
 
         dino=bambam.to_json(to_wgs84=False) #True)
         Deb("Writing " + frname)
@@ -441,16 +454,27 @@ for fake in range(1,8):
             bimbo = gpd.GeoDataFrame(geometry=[point_to_check], crs="WGS84")
             dino=bimbo.to_file("/tmp/bimbo.json",driver="GeoJSON")
 
-            if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
+            if shadow_polygon.contains(point_to_check):
+                print("In shadow bldg " + str(row[5]) + " " + myname)
             #        if k == 0:
             #            combo = shadow_polygon
             #        else:
             #            combo = gpd.GeoDataFrame(pd.concat([combo,shadow_polygon], ignore_index=True))
-            #https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
+#https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
 
 
     k=k+1
     m=m+1
+
+
+#smallone=bigone.dissolve()
+betty=bigone.to_json(to_wgs84=False) #True)
+with open("/tmp/betty.json","w") as w3:
+    w3.write(betty)
+    w3.close()
+
+
+
 
 """
 I am trying to find a solution in a well-respected library, not something de novo.   I am trying to convert a multipolygon to a set of polygons to use as input to library routines.  What I keep finding as solutions iterating through geoms/exterior/coords and then through interiors.  When I visualize the multipolygon and the resulting polygons in ArcGIS they are kilometers apart.  Is there an open source solution I am not finding?
@@ -475,7 +499,16 @@ see page 43 (paper 26) of doxygen manual
 
 
 """@bug
-why does long/lat for 135 e 50th show up in arcgis & geojson in BK?
+
 
 CRS.from_wkt('PROJCS["NAD_1983_StatePlane_New_York_Long_Island_FIPS_3104_Feet",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",40.1666666666667],PARAMETER["central_meridian",-74],PARAMETER["standard_parallel_1",40.6666666666667],PARAMETER["standard_parallel_2",41.0333333333333],PARAMETER["false_easting",984250],PARAMETER["false_northing",0],UNIT["Foot_US",0.304800609601219],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2263"]]')
+"""
+
+
+"""
+gdf.to_epsg()
+will give the CRS in use
+
+https://geopandas.org/en/v1.0.1/docs/user_guide/projections.html
+
 """
