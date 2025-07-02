@@ -104,11 +104,17 @@ def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, 
     # k=1 ensures scale is 1 at the central meridian, useful for localized accurate distances.
     # We set x_0 and y_0 to 0 so our local origin is at (central_lon, central_lat)
     
+##GBR
     crs_wgs84 = pyproj.CRS("EPSG:4326")
+##    crs_wgs84 = pyproj.CRS("CRS84")
     
     # Define a custom local projection CRS
+## was ellps=WGS84
+##changing proj from tmerc to cea
+
+
     local_proj_string = (
-        f"+proj=tmerc +lat_0={central_lat} +lon_0={central_lon} "
+        f"+proj=cea +lat_0={central_lat} +lon_0={central_lon} "
         "+k=1.0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
     )
     crs_local = pyproj.CRS(local_proj_string)
@@ -232,11 +238,12 @@ import pandas as pd
 #print(type(building_base_coords[0]))
 #print(type(building_base_coords))
 
-df = pd.read_csv("/Src/sun/path1.csv",sep=',')
+if 0:
+    df = pd.read_csv("/Src/sun/path1.csv",sep=',')
 
-df['geometry'] = df['geometry'].apply(loads)
+    df['geometry'] = df['geometry'].apply(loads)
 
-gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
+    gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
 
 #gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
 
@@ -245,114 +252,156 @@ gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
 #for k in range(len(df)):
 #    print("Df ",df.iloc[k][0])
 #    print("Gdf1 ",gdf1.iloc[k][0])
+for fake in range(1,8):
+    df = []
+    df = pd.read_csv("/Src/sun/path1.csv",sep=',',skiprows=lambda x: x != 0 and x != fake)
+    Deb("Fake " + str(fake))
 
-k=0
-m=0
-for row in df.itertuples(index=False):
-    Deb('Bldg ' + str(row[5]) + " " + str(row[1]))
+    df['geometry'] = df['geometry'].apply(loads)
 
-
-    geoval=gdf1.geometry.is_valid
-    assert geoval.all()
-
-    bname="/tmp/bldg"+str(m)+".json"
-    pebbles=gdf1.to_json(to_wgs84=True)  #  crs="WGS84"
-    with open(bname,"w") as w:
-      w.write(pebbles)
-
-##    apoly=Polygon(gdf1.iloc[k][0])
-    if 0:
-        list1=list(apoly.exterior.coords[:-1])
-        list2=[]
-    #    Deb("interiors len " + str(len(apoly.interiors)))
-        if len(apoly.interiors) > 0:
-            list2=list(apoly.interiors[0].coords[:-1])    
-            list1=list1+list2
-            Deb("interiors len " + str(len(apoly.interiors)))
-        if row[5]==1013050060:
-            with open("/tmp/ge","w") as ge:
-                for item in list1:
-                  ge.write(str(item) + "\n")
-    #        print("List1 size " + len(list1))
-
-#    Deb(apoly)
-#    apolyboom=apoly.explode()
-
-##    assert apoly.is_valid
-
-    list1=to_coords(row[0])
-    Deb(list1)
-
-    if k==0:
-        Deb(row[0])
-        dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="WGS84")
-        geoval=dshit.geometry.is_valid
-        assert geoval.all()     # other choice .all()
-        barney=dshit.to_json(to_wgs84=True)  #  crs="WGS84"
-        with open("/tmp/dshit.json","w") as w:
-            w.write(barney)
-   
-    shadow_polygon = calculate_building_shadow(
-        list1,
-        row[11],
-        sun_azimuth,
-        sun_altitude,
-        central_lat,
-        central_lon
-    )
+    gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
 
 
 
-    if shadow_polygon:
-      if not shadow_polygon.is_valid:
-        Deb(k)
-        Deb(row[1])
-        Deb(row[5])
-        Deb(shadow_polygon)
-
-    if shadow_polygon:
-      pass
-#      assert shadow_polygon.is_valid
+    k=0
+    m=0
+    for row in df.itertuples(index=False):
 
 
-    if shadow_polygon:
-#        print("Shadow Polygon (Long/Lat):")
-#        if isinstance(shadow_polygon, Polygon):
-#            print(list(shadow_polygon.exterior.coords))
-#        elif isinstance(shadow_polygon, MultiPolygon):
-#            for i, poly in enumerate(shadow_polygon.geoms):
-#                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
-#        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
-#        bambam.to_file("/tmp/bambam.json")
-        for (mylong,mylat,myname) in places_to_check:
-### write shadow file for randolph
 
-            if myname == "randolphfrontdoor" and row[1]=="Randolph":
-              frname="/tmp/ran"+str(m)+".json"
-              bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
-              geoval=bambam.geometry.is_valid
-              assert geoval.all()     # other choice .all()
-              dino=bambam.to_json(to_wgs84=True)
-              with open(frname,"w") as w:
-                w.write(dino)
+        Deb('Bldg ' + str(row[5]) + " " + str(row[1])+"  "+str(fake))
 
 
-#              bambam.to_file(frname,crs="WGS84")
-              m=m+1
-              print("Datar\t"+str(row[5])+"\t"+frname)
+        geoval=gdf1.geometry.is_valid
+        assert geoval.all()
 
-            point_to_check = Point(mylong,mylat)
-            if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
-#        if k == 0:
-#            combo = shadow_polygon
-#        else:
-#            combo = gpd.GeoDataFrame(pd.concat([combo,shadow_polygon], ignore_index=True))
-#https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
+        bname="/tmp/bldg"+str(m)+".json"
+        pebbles=gdf1.to_json(to_wgs84=False   )  #True)  #  crs="WGS84"
+        if not pebbles: asd=4/0
+        Deb("Writing peb "+bname)
+        with open(bname,"w") as w:
+            w.write(pebbles)
+            w.close()
 
-    else:
-        print("No shadow cast (sun at or below horizon).")
+####shadow_banished goes here
 
-    k=k+1
+    ##    assert apoly.is_valid
+
+        list1=to_coords(row[0])
+        #        Deb(list1)
+
+        if k>=0:
+          #            Deb(row[0])
+            dshit=gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="WGS84")
+            geoval=dshit.geometry.is_valid
+            #            assert geoval.all()     # other choice .all()
+            if not  geoval.all() :
+              Deb("Skipping tuple "+ str(k)) #   row(5))
+              next
+
+
+            barney=dshit.to_json(to_wgs84=False)  #=True)  #  crs="WGS84"
+            Deb("Writing barney "+"/tmp/fromtuple"+str(k)+".json")
+            with open("/tmp/fromtuple"+str(k)+".json","w") as w:
+              w.write(barney)
+              w.close()
+              
+            dshit.to_crs("WGS84")
+
+###PROJECTION
+##https://gis.stackexchange.com/questions/372564/userwarning-when-trying-to-get-centroid-from-a-polygon-geopandas
+            dshit.to_crs('+proj=cea').centroid.to_crs(dshit.crs)
+
+##ORIG            dshit["centroid"]=dshit["geometry"].centroid
+
+            dshit["centroid"]= dshit.to_crs('+proj=cea').centroid.to_crs(dshit.crs)
+
+    #        Deb(dshit["centroid"].x)
+
+        shadow_polygon = calculate_building_shadow(
+          list1,
+          row[11],
+          sun_azimuth,
+          sun_altitude,
+          dshit["centroid"].y,
+          dshit["centroid"].x
+          #        central_lat,
+          #        central_lon
+        )
+
+        if not shadow_polygon:
+          print("Skipping "+row(5))
+          next
+
+
+        if shadow_polygon:
+          if not shadow_polygon.is_valid:
+            Deb(k)
+            Deb(row[1])
+            Deb(row[5])
+            Deb(shadow_polygon)
+
+        if shadow_polygon:
+          pass
+        #      assert shadow_polygon.is_valid
+
+
+        if shadow_polygon:
+          #        print("Shadow Polygon (Long/Lat):")
+          #        if isinstance(shadow_polygon, Polygon):
+          #            print(list(shadow_polygon.exterior.coords))
+          #        elif isinstance(shadow_polygon, MultiPolygon):
+          #            for i, poly in enumerate(shadow_polygon.geoms):
+          #                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
+          #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+          #        bambam.to_file("/tmp/bambam.json")
+            for (mylong,mylat,myname) in places_to_check:
+              ### write shadow file for randolph
+
+    #            if myname == "randolphfrontdoor" and row[1]=="Randolph":
+
+
+    ###################################
+                frname="/tmp/shadow"+str(fake)+".json"
+                bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+                geoval=bambam.geometry.is_valid
+                #                assert geoval.all()     # other choice .all()
+                if not geoval.all():
+                  Deb("Skipping shadow " + str(k))
+
+                dino=bambam.to_json(to_wgs84=False) #True)
+                Deb("Writing " + frname)
+                with open(frname,"w") as w:
+                  w.write(dino)
+                  w.close()
+
+      #              bambam.to_file(frname,crs="WGS84")
+                m=m+1
+                print("Datar\t"+str(row[5])+"\t"+frname)
+
+    ###was randolph if
+
+    ##################################
+
+
+
+
+                point_to_check = Point(mylat,mylong)  ###GBR check this
+                bimbo = gpd.GeoDataFrame(geometry=[point_to_check], crs="WGS84")
+                dino=bimbo.to_file("/tmp/bimbo.json",driver="GeoJSON")
+
+                if shadow_polygon.contains(point_to_check): print("In shadow bldg " + str(row[5]) + " " + myname)
+                #        if k == 0:
+                #            combo = shadow_polygon
+                #        else:
+                #            combo = gpd.GeoDataFrame(pd.concat([combo,shadow_polygon], ignore_index=True))
+                #https://geopandas.org/en/stable/docs/user_guide/mergingdata.html
+
+        else:
+          print("No shadow cast (sun at or below horizon).")
+
+        k=k+1
+        m=m+1
 
 """
 I am trying to find a solution in a well-respected library, not something de novo.   I am trying to convert a multipolygon to a set of polygons to use as input to library routines.  What I keep finding as solutions iterating through geoms/exterior/coords and then through interiors.  When I visualize the multipolygon and the resulting polygons in ArcGIS they are kilometers apart.  Is there an open source solution I am not finding?
@@ -379,5 +428,5 @@ see page 43 (paper 26) of doxygen manual
 """@bug
 why does long/lat for 135 e 50th show up in arcgis & geojson in BK?
 
-
+CRS.from_wkt('PROJCS["NAD_1983_StatePlane_New_York_Long_Island_FIPS_3104_Feet",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",40.1666666666667],PARAMETER["central_meridian",-74],PARAMETER["standard_parallel_1",40.6666666666667],PARAMETER["standard_parallel_2",41.0333333333333],PARAMETER["false_easting",984250],PARAMETER["false_northing",0],UNIT["Foot_US",0.304800609601219],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2263"]]')
 """
