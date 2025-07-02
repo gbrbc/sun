@@ -234,24 +234,26 @@ for each bldg
 
 
 import pandas as pd
+"""!
+@page page1 MainLoop Start here
 
-#print(type(building_base_coords[0]))
-#print(type(building_base_coords))
 
-if 0:
-    df = pd.read_csv("/Src/sun/path1.csv",sep=',')
+read in each line of the buildings file path1.csv
 
-    df['geometry'] = df['geometry'].apply(loads)
+set up geometry and create the GeoDataFrame
 
-    gdf1 = gpd.GeoDataFrame(df, crs="WGS84")  # Replace "your_crs"
+for row is only going to iterate over 1 bldg
 
-#gdf1['geometry'] = gdf1['geometry'].apply(convert_multipolygon)
+each bldg should have a json file starting w /tmp/bldg
+with its dataframe
 
-#Deb(gdf1.iloc[0][0])
 
-#for k in range(len(df)):
-#    print("Df ",df.iloc[k][0])
-#    print("Gdf1 ",gdf1.iloc[k][0])
+
+
+
+"""
+
+
 for fake in range(1,8):
     df = []
     df = pd.read_csv("/Src/sun/path1.csv",sep=',',skiprows=lambda x: x != 0 and x != fake)
@@ -287,6 +289,29 @@ for fake in range(1,8):
 
     ##    assert apoly.is_valid
 
+        """!
+        @page page2 MainLoop continue
+
+        code to compute shadow needs the multipoly
+        broken into tuples of long/lat, hopefully
+        done by to_coords
+
+        GeoFrame made of result and some are tested
+        by eye
+
+        Some come back as not valid structures and
+        are skipped
+
+        Passing ones written to JSON as /tmp/fromtuple...
+
+        CRS changed to WGS84 in case they were not before
+
+        centroid calculated as input to shadow calc
+
+        shadow_polygon is result of calc
+
+        """
+
         list1=to_coords(row[0])
         #        Deb(list1)
 
@@ -302,9 +327,9 @@ for fake in range(1,8):
 
             barney=dshit.to_json(to_wgs84=False)  #=True)  #  crs="WGS84"
             Deb("Writing barney "+"/tmp/fromtuple"+str(k)+".json")
-            with open("/tmp/fromtuple"+str(k)+".json","w") as w:
-              w.write(barney)
-              w.close()
+            with open("/tmp/fromtuple"+str(k)+".json","w") as w1:
+              w1.write(barney)
+              w1.close()
               
             dshit.to_crs("WGS84")
 
@@ -355,6 +380,25 @@ for fake in range(1,8):
           #                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
           #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
           #        bambam.to_file("/tmp/bambam.json")
+
+
+            """!
+            @page page3 check each shadow target
+            against each building
+            for now each shadow is written as json
+            to /tmp/shadow..
+            In future it should only be for
+            shadows that have a target in them
+
+            NB that Point takes lat/long
+
+            /tmp/bimbo... is file with point
+
+            
+
+
+            """
+
             for (mylong,mylat,myname) in places_to_check:
               ### write shadow file for randolph
 
@@ -371,9 +415,9 @@ for fake in range(1,8):
 
                 dino=bambam.to_json(to_wgs84=False) #True)
                 Deb("Writing " + frname)
-                with open(frname,"w") as w:
-                  w.write(dino)
-                  w.close()
+                with open(frname,"w") as w2:
+                  w2.write(dino)
+                  w2.close()
 
       #              bambam.to_file(frname,crs="WGS84")
                 m=m+1
