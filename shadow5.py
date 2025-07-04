@@ -14,6 +14,9 @@ from pybdshadow import *
 from analysis import *
 
 
+bdmode=1
+mainmode=2
+modemode=bdmode
 
 mylist2d0 = [
     [40.755515, -73.971029, "mcds"],
@@ -470,7 +473,22 @@ for fake in range(1, 8):
             Deb('Deprecates')
 
             dshit.to_crs("WGS84")
+
+            Deb('Deprecates')
+
+
+
+
+
             dshit["centroid"] = dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
+
+            Deb('Deprecates')
+
+        
+            print(dshit["centroid"])
+
+
+
             Deb('Deprecates')
 
         Deb("Calc input")
@@ -496,7 +514,7 @@ for fake in range(1, 8):
         myx=myx0.iloc[0]
 
         Deb('Deprecates')
-        if 1:
+        if modemode==mainmode:
             shadow_polygon = calculate_building_shadow(
                 list1,
                 row[11],
@@ -507,14 +525,15 @@ for fake in range(1, 8):
                 #        central_lat,
                 #        central_lon
             )
-        else:
+        else:                   # bdmode
             dshit['height']=row[11]
             dshit['building_id']=row[2]
             dshit.to_crs("WGS84")
             shadow_polygon= bdshadow_sunlight(
                 dshit,
                 0,
-                "height")
+                "height",
+                 roof=True)
 
         Deb('print result')
         pd.set_option('display.max_columns',None)
@@ -552,8 +571,18 @@ for fake in range(1, 8):
         #        SHADOWPROJ="EPSG:4326"
         SHADOWPROJ = "WGS84"
         frname = "/tmp/shadow" + str(fake) + ".json"
-#        bambam = gpd.GeoDataFrame([shadow_polygon],geometry=['geometry'], crs=SHADOWPROJ)
-        bambam = gpd.GeoDataFrame(geometry=[shadow_polygon], crs=SHADOWPROJ)
+#BD branch
+        Deb('Branch')
+        Deb(type(shadow_polygon))
+        Deb(shadow_polygon)
+
+        if modemode==bdmode:
+            sd=shadow_polygon.loc[0,'geometry']
+            shadow_polygon=Polygon(sd)
+#            print(sd)
+            bambam = gpd.GeoDataFrame(geometry=[shadow_polygon], crs=SHADOWPROJ)
+        else:
+            bambam = gpd.GeoDataFrame(geometry=[shadow_polygon], crs=SHADOWPROJ)
         bambam = bambam.to_crs(SHADOWPROJ)
 
         geoval = bambam.geometry.is_valid
