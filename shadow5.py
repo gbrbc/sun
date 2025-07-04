@@ -10,6 +10,10 @@ import subprocess
 import numpy as np
 import pandas as pd
 
+from pybdshadow import *
+from analysis import *
+
+
 
 mylist2d0 = [
     [40.755515, -73.971029, "mcds"],
@@ -28,7 +32,7 @@ mylist2d = [[40.75624, -73.97159, "randolphfrontdoor"]]
 places_to_check = np.array(mylist2d)  # look for shadows in these locations
 
 bigone = gpd.GeoDataFrame()
-
+allbldg = gpd.GeoDataFrame()
 
 ## function for debugging
 #
@@ -200,7 +204,8 @@ def calculate_building_shadow(
         f"+proj=tmerc +lat_0={central_lat} +lon_0={central_lon} "
         "+k=1.0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
     )
-    crs_local = pyproj.CRS(local_proj_string)
+#    crs_local = pyproj.CRS(local_proj_string)
+    crs_local = pyproj.CRS("EPSG:2263")
 
     # Create transformers for forward and inverse transformations
     transformer_to_local = pyproj.Transformer.from_crs(
@@ -319,6 +324,9 @@ sun_azimuth = float(sun_azimuth1) + 0.0
 sun_altitude = float(sun_altitude1) + 0.0
 # sun_azimuth = 144.71 # degrees (South-West)
 # sun_altitude = 13.48 # degrees
+sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
+
+
 
 testkey=""                      # set if running as test
 if 'TESTKEY' in os.environ:
@@ -432,11 +440,19 @@ for fake in range(1, 8):
                 Deb("Skipping tuple " + str(k))  #   row(5))
                 next
 
-            barney = dshit.to_json(to_wgs84=False)  # =True)  #  crs="WGS84"
+            barney = dshit.to_json(to_wgs84=False)  # =True)  #  crs="EPSG:3627"
             Deb("Writing barney " + "/tmp/fromtuple" + str(k) + ".json")
             with open("/tmp/fromtuple" + str(k) + ".json", "w") as w1:
                 w1.write(barney)
                 w1.close()
+
+
+### concat all of the bldg's
+
+            concatb = gpd.GeoDataFrame()
+            concatb = pd.concat([allbldg,dshit], ignore_index=True)
+            allbldg = concatb
+
 
 
             Deb('Deprecates')
@@ -445,15 +461,15 @@ for fake in range(1, 8):
             ###PROJECTION
             ##https://gis.stackexchange.com/questions/372564/userwarning-when-trying-to-get-centroid-from-a-polygon-geopandas
 
-#            dshit.to_crs("WGS84")
-            dshit.to_crs("EPSG:32118")
+
+            dshit.to_crs("WGS84")
             Deb('Deprecates')
             dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
 
             ##ORIG            dshit["centroid"]=dshit["geometry"].centroid
             Deb('Deprecates')
-#            dshit.to_crs("WGS84")
-            dshit.to_crs("EPSG:32118")
+
+            dshit.to_crs("WGS84")
             dshit["centroid"] = dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
             Deb('Deprecates')
 
@@ -480,30 +496,45 @@ for fake in range(1, 8):
         myx=myx0.iloc[0]
 
         Deb('Deprecates')
-        shadow_polygon = calculate_building_shadow2(
-            list1,
-            row[11],
-            sun_azimuth,
-            sun_altitude,
-            myy,
-            myx
-            #        central_lat,
-            #        central_lon
-        )
-        Deb('Deprecates')
-        if not shadow_polygon:
-            print("Skipping " + row(5))
-            next
+        if 1:
+            shadow_polygon = calculate_building_shadow(
+                list1,
+                row[11],
+                sun_azimuth,
+                sun_altitude,
+                myy,
+                myx
+                #        central_lat,
+                #        central_lon
+            )
+        else:
+            dshit['height']=row[11]
+            dshit['building_id']=row[2]
+            dshit.to_crs("WGS84")
+            shadow_polygon= bdshadow_sunlight(
+                dshit,
+                0,
+                "height")
 
-        if shadow_polygon:
-            if not shadow_polygon.is_valid:
-                Deb(k)
-                Deb(row[1])
-                Deb(row[5])
-                Deb(shadow_polygon)
+        Deb('print result')
+        pd.set_option('display.max_columns',None)
+        pd.set_option('display.max_rows',None)
 
-        if shadow_polygon:
-            pass
+
+
+#        if not shadow_polygon:
+#            print("Skipping " + row(5))
+#            next
+
+#        if shadow_polygon:
+#            if not shadow_polygon.is_valid:
+#                Deb(k)
+#                Deb(row[1])
+#                Deb(row[5])
+#                Deb(shadow_polygon)
+
+#        if shadow_polygon:
+#            pass
         #      assert shadow_polygon.is_valid
 
         # needed?        if shadow_polygon:
@@ -515,12 +546,13 @@ for fake in range(1, 8):
         #        elif isinstance(shadow_polygon, MultiPolygon):
         #            for i, poly in enumerate(shadow_polygon.geoms):
         #                print(f"APolygon {i+1}: {list(poly.exterior.coords)}")
-        #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="WGS84")
+        #        bambam=gpd.GeoDataFrame(geometry=[shadow_polygon], crs="EPSG:2263")
         #        bambam.to_file("/tmp/bambam.json")
 
         #        SHADOWPROJ="EPSG:4326"
-        SHADOWPROJ = "EPSG:2263"
+        SHADOWPROJ = "WGS84"
         frname = "/tmp/shadow" + str(fake) + ".json"
+#        bambam = gpd.GeoDataFrame([shadow_polygon],geometry=['geometry'], crs=SHADOWPROJ)
         bambam = gpd.GeoDataFrame(geometry=[shadow_polygon], crs=SHADOWPROJ)
         bambam = bambam.to_crs(SHADOWPROJ)
 
@@ -531,7 +563,11 @@ for fake in range(1, 8):
 
         concat = gpd.GeoDataFrame()
         concat = pd.concat([bigone, bambam], ignore_index=True)
+        concat = concat.to_crs("WGS84")
         bigone = concat
+        bigone = bigone.to_crs("WGS84")
+
+
 
         dino = bambam.to_json(to_wgs84=False)  # True)
         Deb("Writing " + frname)
@@ -539,7 +575,7 @@ for fake in range(1, 8):
             w2.write(dino)
             w2.close()
 
-        #              bambam.to_file(frname,crs="WGS84")
+        #              bambam.to_file(frname,crs="EPSG:2263")
         m = m + 1
         print("Datar\t" + str(row[5]) + "\t" + frname)
 
@@ -594,6 +630,15 @@ with open("/tmp/betty" + testkey + ".json", "w") as w3:
     w3.close()
 
 
+betty = allbldg.to_json(to_wgs84=False)  # True)
+with open("/tmp/allbldg" + testkey + ".json", "w") as w3:
+    w3.write(betty)
+    w3.close()
+
+
+
+
+
 """
 I am trying to find a solution in a well-respected library, not something de novo.   I am trying to convert a multipolygon to a set of polygons to use as input to library routines.  What I keep finding as solutions iterating through geoms/exterior/coords and then through interiors.  When I visualize the multipolygon and the resulting polygons in ArcGIS they are kilometers apart.  Is there an open source solution I am not finding?
 
@@ -626,5 +671,25 @@ gdf.to_epsg()
 will give the CRS in use
 
 https://geopandas.org/en/v1.0.1/docs/user_guide/projections.html
+
+"""
+
+"""
+https://mhallwor.github.io/_pages/basics_SpatialPolygons
+
+https://mhweber.github.io/R-User-Group-Spatial-Workshop-2018/SpatialObjects.html
+
+https://shapely.readthedocs.io/en/stable/manual.html
+
+https://spatialreference.org/ref/epsg/2263/
+
+
+
+
+
+
+
+https://syntha.ai/converters/r-to-python
+
 
 """
