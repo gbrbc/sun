@@ -221,12 +221,9 @@ def calculate_building_shadow(
     # Convert building base from lat/lon to local meters
     building_base_local_coords = []
     for lon, lat in building_polygon_lat_lon:
-        Deb('Deprecates')
         x, y = transformer_to_local.transform(lon, lat)
-        Deb('Deprecates')
         building_base_local_coords.append((x, y))
 
-    Deb('Deprecates')
     building_base_polygon_local = Polygon(building_base_local_coords)
 
     # 2. Calculate shadow length and direction vector components
@@ -247,12 +244,10 @@ def calculate_building_shadow(
     # 3. Project the building's top outline to get the shadow
     # For a simple polygon, we can translate the base polygon directly.
 
-    Deb('Deprecates')
 
     shadow_polygon_local = translate(building_base_polygon_local, xoff=dx, yoff=dy)
     
 
-    Deb('Deprecates')
 
     # 4. Convert shadow polygon back to lat/lon
     shadow_lonlat_coords = []
@@ -261,7 +256,6 @@ def calculate_building_shadow(
         for x, y in shadow_polygon_local.exterior.coords:
             lon, lat = transformer_to_lonlat.transform(x, y)
             shadow_lonlat_coords.append((lon, lat))
-        Deb('Deprecates')
         return Polygon(shadow_lonlat_coords)
     elif isinstance(shadow_polygon_local, MultiPolygon):
         # Handle multipolygon case
@@ -272,7 +266,6 @@ def calculate_building_shadow(
                 lon, lat = transformer_to_lonlat.transform(x, y)
                 poly_lonlat_coords.append((lon, lat))
             transformed_geoms.append(Polygon(poly_lonlat_coords))
-        Deb('Deprecates')
         return MultiPolygon(transformed_geoms)
     else:
         return None
@@ -458,7 +451,6 @@ for fake in range(1, 8):
 
 
 
-            Deb('Deprecates')
 
 
             ###PROJECTION
@@ -466,15 +458,12 @@ for fake in range(1, 8):
 
 
             dshit.to_crs("WGS84")
-            Deb('Deprecates')
             dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
 
             ##ORIG            dshit["centroid"]=dshit["geometry"].centroid
-            Deb('Deprecates')
 
             dshit.to_crs("WGS84")
 
-            Deb('Deprecates')
 
 
 
@@ -482,14 +471,12 @@ for fake in range(1, 8):
 
             dshit["centroid"] = dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
 
-            Deb('Deprecates')
 
         
             print(dshit["centroid"])
 
 
 
-            Deb('Deprecates')
 
         Deb("Calc input")
         Deb(list1)
@@ -513,7 +500,6 @@ for fake in range(1, 8):
         myy=myy0.iloc[0]
         myx=myx0.iloc[0]
 
-        Deb('Deprecates')
         if modemode==mainmode:
             shadow_polygon = calculate_building_shadow(
                 list1,
@@ -533,7 +519,8 @@ for fake in range(1, 8):
                 dshit,
                 0,
                 "height",
-                 roof=True)
+                 roof=True,
+                 include_building=True)
 
         Deb('print result')
         pd.set_option('display.max_columns',None)
