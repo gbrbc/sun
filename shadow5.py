@@ -1,3 +1,6 @@
+#  -*- compile-command: "env TESTKEY=`incr1o testkey` python3 shadow5.py"; compile-read-command: t ;  -*-
+
+
 import sys
 import os
 from shapely.geometry import Polygon, MultiPolygon, Point
@@ -218,12 +221,9 @@ def calculate_building_shadow(
     # Convert building base from lat/lon to local meters
     building_base_local_coords = []
     for lon, lat in building_polygon_lat_lon:
-        Deb('Deprecates')
         x, y = transformer_to_local.transform(lon, lat)
-        Deb('Deprecates')
         building_base_local_coords.append((x, y))
 
-    Deb('Deprecates')
     building_base_polygon_local = Polygon(building_base_local_coords)
 
     # 2. Calculate shadow length and direction vector components
@@ -244,12 +244,10 @@ def calculate_building_shadow(
     # 3. Project the building's top outline to get the shadow
     # For a simple polygon, we can translate the base polygon directly.
 
-    Deb('Deprecates')
 
     shadow_polygon_local = translate(building_base_polygon_local, xoff=dx, yoff=dy)
     
 
-    Deb('Deprecates')
 
     # 4. Convert shadow polygon back to lat/lon
     shadow_lonlat_coords = []
@@ -258,7 +256,6 @@ def calculate_building_shadow(
         for x, y in shadow_polygon_local.exterior.coords:
             lon, lat = transformer_to_lonlat.transform(x, y)
             shadow_lonlat_coords.append((lon, lat))
-        Deb('Deprecates')
         return Polygon(shadow_lonlat_coords)
     elif isinstance(shadow_polygon_local, MultiPolygon):
         # Handle multipolygon case
@@ -269,7 +266,6 @@ def calculate_building_shadow(
                 lon, lat = transformer_to_lonlat.transform(x, y)
                 poly_lonlat_coords.append((lon, lat))
             transformed_geoms.append(Polygon(poly_lonlat_coords))
-        Deb('Deprecates')
         return MultiPolygon(transformed_geoms)
     else:
         return None
@@ -399,6 +395,8 @@ for fake in range(1, 8):
             w.write(pebbles)
             w.close()
 
+
+
         ####shadow_banished goes here
 
         ##    assert apoly.is_valid
@@ -431,6 +429,28 @@ for fake in range(1, 8):
         list1 = to_coords(row[0])
         #        Deb(list1)
 
+## try to simplify it
+## float(shapely.__version__) is 2.0.6
+
+
+        if shapely.__version__ != "2.0.6":
+            gs1 = gpd.GeoSeries([Polygon(list1)])
+            sim1 = gs1.simplify_coverage(50, simplify_coverage=False)
+
+            bname = "/tmp/sim" + str(fake) + ".json"
+            pebbles = sim1.to_json(to_wgs84=False)  # True)  #  crs="WGS84"
+            with open(bname, "w") as w:
+                w.write(pebbles)
+                w.close()
+
+
+
+
+
+
+
+
+
         if k >= 0:
             #            Deb(row[0])
             dshit = gpd.GeoDataFrame(geometry=[Polygon(list1)], crs="WGS84")
@@ -455,7 +475,6 @@ for fake in range(1, 8):
 
 
 
-            Deb('Deprecates')
 
 
             ###PROJECTION
@@ -463,15 +482,12 @@ for fake in range(1, 8):
 
 
             dshit.to_crs("WGS84")
-            Deb('Deprecates')
             dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
 
             ##ORIG            dshit["centroid"]=dshit["geometry"].centroid
-            Deb('Deprecates')
 
             dshit.to_crs("WGS84")
             dshit["centroid"] = dshit.to_crs("+proj=cea").centroid.to_crs(dshit.crs)
-            Deb('Deprecates')
 
         Deb("Calc input")
         Deb(list1)
@@ -495,7 +511,6 @@ for fake in range(1, 8):
         myy=myy0.iloc[0]
         myx=myx0.iloc[0]
 
-        Deb('Deprecates')
         if 1:
             shadow_polygon = calculate_building_shadow(
                 list1,
@@ -690,6 +705,25 @@ https://spatialreference.org/ref/epsg/2263/
 
 
 https://syntha.ai/converters/r-to-python
+
+
+"""
+
+
+
+"""
+
+
+is there an "api" or library routine from "open source software" that can take a "polygon" of the base of a "building" and the height of the building and show what it would obscure from "different angles"
+
+
+Also, Sextante is a GIS library for Java. It may include that functionality - http://www.sextantegis.com/
+
+The aggregatepolygons function is published at github under:
+
+https://github.com/hdus/pgtools
+
+
 
 
 """
