@@ -1,4 +1,4 @@
-
+import warnings
 import sys
 import os
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString
@@ -19,6 +19,9 @@ from to_coords import *
 
 
 from geographiclib.geodesic import Geodesic
+
+
+warnings.filterwarnings("error", category=UserWarning)
 
 
 def Deb(msg=""):
@@ -60,12 +63,17 @@ Deb(type(dshit2))
 Deb(type(dshit3))
 
 
-#dshit3['centroid']=dshit3['geometry'].centroid
+dshit3['centroid']=dshit3['geometry'].centroid
 
 
-dshit = rotateline(dshit3.geometry.iloc[0].coords,180.0+a['azi1'], sunaz)
 
-barney = dshit.to_json(to_wgs84=False)  # =True)  #  crs="EPSG:3627"
+dshit = rotateline(LineString(b),180.0+a['azi1'], sunaz)
+#dshit = rotateline(dshit3.geometry.get_coordinates(),180.0+a['azi1'], sunaz)
+
+
+dshit4 = gpd.GeoDataFrame(geometry=[dshit], crs="WGS84")
+
+barney = dshit4.to_json(to_wgs84=False)  # =True)  #  crs="EPSG:3627"
 
 
 
@@ -85,13 +93,49 @@ tandeg=np.rad2deg(np.deg2rad(elevation))
 
 slength=  height / tandeg
 
-Deb("line length ")
-Deb(dshit.geometry.length)
-Deb("line x ")
-Deb(dshit.geometry)
+#Deb("line length ")
+#Deb(dshit4.geometry.length)
+#Deb("line x ")
+#Deb(dshit4.geometry)
 
 Deb("Shadow len ")
 Deb( slength)
+
+
+#############################################
+#############################################
+#####now call makerec2 to make shadow box####
+#############################################
+#############################################
+
+from makerec2deg import *
+
+deglengthlat=slength * (1/111111)
+deglengthlon=slength * (1/(111111*math.cos(40)))
+deglength=(deglengthlat+deglengthlon)/2
+
+
+
+
+
+
+
+
+for k in range(0,2):
+    newshadow = makerecdeg(dshit, deglength, k)
+
+    Deb(type(newshadow))
+
+    barney = newshadow.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
+
+
+
+
+
+    with open("/tmp/fromwall" + str(k) + ".json", "w") as w1:
+        w1.write(barney)
+        w1.close()
+
 
 
 
