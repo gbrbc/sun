@@ -14,10 +14,21 @@ def Deb(msg=""):
 def rotateline(line,current_azimuth_degrees,new_azimuth_degrees):
 
     Deb('In rotateline')
-    Deb(line)
+    if not isinstance(line,LineString):
+        raise TypeError("supply LineString instead")
 
     # Create a sample LineString
 #    line = LineString([(0, 0), (10, 5)])
+
+#    line2=line.copy()
+
+ 
+ 
+
+##https://stackoverflow.com/questions/56989956/creating-a-centroid-column-from-geometry-shape-field-produces-attributeerror-n
+
+
+#    line2["geometry"] = line2["geometry"].centroid
 
     # Calculate the centroid of the LineString
     line_centroid = line.centroid

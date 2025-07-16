@@ -370,7 +370,7 @@ k = -1
 for fake in range(1, 8):
     df = []
     df = pd.read_csv(
-        "/Src/sun/path1.csv", sep=",", skiprows=lambda x: x != 0 and x != fake
+        "/Src/sun/just1.csv", sep=",", skiprows=lambda x: x != 0 and x != fake
     )
     Deb("Fake " + str(fake))
 
@@ -427,7 +427,7 @@ for fake in range(1, 8):
         """
 
         list1 = to_coords(row[0])
-        #        Deb(list1)
+        Deb(list1)
 
 ## try to simplify it
 ## float(shapely.__version__) is 2.0.6
