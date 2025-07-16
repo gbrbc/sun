@@ -19,7 +19,7 @@ from to_coords import *
 
 
 from geographiclib.geodesic import Geodesic
-from makerec2deg import *
+from makerec3 import *
 
 from getpos import *
 
@@ -177,7 +177,8 @@ def wall2polygon(wall_list):
 
 
         for k in range(0,1):
-            newshadow = makerecdeg(dshit, deglength, k)
+#            newshadow = makerecdeg(dshit, deglength, k)
+            newshadow = makerec3(b, slength, k)
 
             Deb(type(newshadow))
 
@@ -219,16 +220,21 @@ def main():
 
     dshit8=dshit8.union_all()
 
+    Deb(type(dshit8))
+    Deb(dshit8.geom_type)
+    dshit9=gpd.GeoDataFrame(geometry=[dshit8])
+
         
-    barney = dshit8.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
-#    barney = dshit8.to_file("/tmp/total99.json",driver='GeoJSON')
+    barney = dshit9.to_json(to_wgs84=False)  # =True)  #  crs="EPSG:3627"
+#    barney = dshit9.to_file("/tmp/total99.json",driver='GeoJSON')
 
     with open("/tmp/total" + str(99) + ".json", "w") as w1:
         w1.write(barney)
         w1.close()
 
 
-    dshit8=dshit8.to_crs("EPSG:2263")
+    dshit9.set_crs("EPSG:2263",inplace=True)
+    dshit8=dshit9
     dshit8['centroid']=dshit8['geometry'].centroid
     print(type(dshit8['centroid']))
     print(dshit8['centroid'])
