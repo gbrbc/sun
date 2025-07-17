@@ -11,7 +11,7 @@ def Deb(msg=""):
     sys.stderr.flush()
 
 
-def rotateline(line,current_azimuth_degrees,new_azimuth_degrees):
+def rotateline2(line,current_azimuth_degrees,new_azimuth_degrees):
 
     Deb('In rotateline')
     if not isinstance(line,LineString):
@@ -40,7 +40,7 @@ def rotateline(line,current_azimuth_degrees,new_azimuth_degrees):
     dx = last_point[0] - first_point[0]
     dy = last_point[1] - first_point[1]
     current_azimuth_radians = math.atan2(dx, dy)
-#    current_azimuth_degrees = math.degrees(current_azimuth_radians)
+    current_azimuth_degrees = math.degrees(current_azimuth_radians)
 
     Deb(f"Original LineString: {line}")
     print(f"Line Centroid: {line_centroid}")
@@ -56,5 +56,11 @@ def rotateline(line,current_azimuth_degrees,new_azimuth_degrees):
     rotated_line = rotate(line, rotation_angle_degrees, origin=line_centroid)
 
     print(f"Rotated LineString: {rotated_line}")
+    print(f"Rotated Azimuth (degrees): {rotation_angle_degrees}")
+
+    if rotation_angle_degrees<=0 or rotation_angle_degrees>360:
+        raise TypeError("az below 0 or over 360")
+
+
 
     return rotated_line

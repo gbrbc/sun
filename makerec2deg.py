@@ -28,7 +28,7 @@ def makerecdeg(line_lonlat, dim2, k):
         Deb(type(line_lonlat.geometry.iloc[0]))
 #        raise TypeError("supply LineString instead")
 
-
+    j=8/0
     Deb("makerec line_lonlat   k=" + str(k))
     Deb(line_lonlat)
     Deb(dim2)
@@ -131,10 +131,18 @@ def makerecdeg(line_lonlat, dim2, k):
 #geopandas.GeoDataFrame(geometry=[connecting_line_start]), geopandas.GeoDataFrame(geometry=[connecting_line_end])
 
 
-    all_lines = geopandas.GeoSeries([line_lonlat, offset_line_lonlat])
+#geopandas.GeoSeries([line_lonlat, offset_line_lonlat])
+
+    all_lines = geopandas.GeoDataFrame(geometry=[connecting_line_start]), geopandas.GeoDataFrame(geometry=[connecting_line_end])
+
+    Deb(type(all_lines))
+    all_lines_ds=geopandas.GeoSeries( [all_lines])
+
 
     # 9. Use polygonize to create the rectangle
-    polygon = list(all_lines.polygonize())[0]
+#    polygon = geopandas.GeoSeries( list(all_lines))
+
+    polygon = list(all_lines_ds.polygonize())[0]
 
     # Now, 'polygon' is your rectangle defined in long/lat coordinates.
     # You can then create a GeoDataFrame if needed:

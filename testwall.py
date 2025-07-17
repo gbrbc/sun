@@ -122,16 +122,21 @@ def wall2polygon(wall_list):
         assert (0.0+a['azi1'])<=360
 
 ##skip rotate
-        skiprotate=True
+        skiprotate=False
         if skiprotate:
             dshit4=dshit2
             dshit=dshit2
         else:
     ## Previously added 180 to line's az
-            dshit = rotateline(LineString(b),0.0+a['azi1'], sunaz)
+            Deb("Rotate "+str(180.0+a['azi1'])+"  to  "+str(sunaz))
+            dshit = rotateline2(LineString(b),180.0+a['azi1'], sunaz)
             #dshit = rotateline(dshit3.geometry.get_coordinates(),180.0+a['azi1'], sunaz)
 
             dshit4 = gpd.GeoDataFrame(geometry=[dshit], crs="WGS84")
+            dshit2=dshit4
+            dshit=dshit4
+
+
 
         barney = dshit4.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 

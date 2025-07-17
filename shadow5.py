@@ -159,7 +159,7 @@ def calculate_building_shadow2(building_polygon_lat_lon, building_height_meters,
 
 ## calc shadow
 #
-def calculate_building_shadow(
+def GROTcalculate_building_shadow(
     building_polygon_lat_lon,
     building_height_meters,
     sun_azimuth_deg,
@@ -322,7 +322,7 @@ sun_altitude = float(sun_altitude1) + 0.0
 # sun_altitude = 13.48 # degrees
 sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
 
-
+print(sunposition)
 
 testkey=""                      # set if running as test
 if 'TESTKEY' in os.environ:

@@ -26,7 +26,7 @@ def makerec(line_lonlat, dim2, k):
 #    if not isinstance(line,LineString):
 #        raise TypeError("supply LineString instead")
 
-
+    h=5/0
     Deb("makerec line_lonlat   k=" + str(k))
     Deb(line_lonlat)
     Deb(dim2)
