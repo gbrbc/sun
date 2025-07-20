@@ -59,7 +59,7 @@ def wall2polygon2(alist):
     
     for wall1 in alist:
         for wall2 in wall1:
-            Deb(wall2)
+#            Deb(wall2)
 
             b=wall2
 
@@ -86,8 +86,8 @@ def wall2polygon2(alist):
 
             dshit3=dshit2.to_crs("EPSG:3857")
 
-            Deb(type(dshit2))
-            Deb(type(dshit3))
+#            Deb(type(dshit2))
+#            Deb(type(dshit3))
 
 
             dshit3['centroid']=dshit3['geometry'].centroid
@@ -212,8 +212,8 @@ def wall2polygon(wall_list):
 
 # Function to extract wall segments as (long, lat) tuples
 def extract_wall_coords(geometry):
-    Deb('extract_wall_coords')
-    Deb(geometry.geom_type)
+#    Deb('extract_wall_coords')
+#    Deb(geometry.geom_type)
     walls = []
     if geometry.geom_type == 'LineString':
         coords = list(geometry.coords)
@@ -255,7 +255,7 @@ def main():
 
     df = []
     df = pd.read_csv(
-        "/Src/sun/just1.csv", sep=",")    
+        "/Src/sun/path1.csv", sep=",")    
 
     df['geometry'] = df['geometry'].apply(loads)
 
