@@ -10,6 +10,9 @@ import subprocess
 import numpy as np
 import pandas as pd
 
+from geotools import *
+
+
 
 def get_position(date, central_lon, central_lat):
 
@@ -34,10 +37,11 @@ def get_position(date, central_lon, central_lat):
 
 
     (sun_azimuth1, sun_altitude1) = aresult.split()
-    sun_azimuth = float(sun_azimuth1) + 99.0
+    sun_azimuth = float(sun_azimuth1) + 0.0  # 99.0
     sun_altitude = float(sun_altitude1) + 0.0
     # sun_azimuth = 144.71 # degrees (South-West)
     # sun_altitude = 13.48 # degrees
     sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
+    Deb(f"sunpos az  {sun_azimuth:.2f}   alt {sun_altitude:.2f}")
 
-    return sunposition
+    return sunposition 

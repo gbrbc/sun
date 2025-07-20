@@ -4,9 +4,13 @@ from shapely.ops import transform
 from functools import partial
 import pyproj
 
+from geotools import *
+
+
+
 def makerec3(line_coords,buffer_distance,k):
 
-
+    Deb("STARTED MAKEREC3")
     # 1. Define the initial LineString in longitude/latitude
     #line_coords = [(-74.006, 40.7128), (-74.005, 40.7130)]
 #    line_coords = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775)]
@@ -54,4 +58,5 @@ def makerec3(line_coords,buffer_distance,k):
         w.close()
 
 
+    Deb("LEFT MAKEREC3")
     return gdf

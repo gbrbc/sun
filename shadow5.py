@@ -299,30 +299,9 @@ point_to_check = Point(central_lon, central_lat)
 # Sun position (example: afternoon sun, southwest direction)
 
 # Possible time to pass to spa2py
-zulu = ""
-if len(sys.argv) > 1:
-    zulu = sys.argv[1]
 
-print("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu)
+subposition = get_az_el(central_lon, central_lat)
 
-result = subprocess.run(
-    "spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu,
-    capture_output=True,
-    text=True,
-    shell=True,
-    check=True,
-)
-aresult = result.stdout
-
-
-(sun_azimuth1, sun_altitude1) = aresult.split()
-sun_azimuth = float(sun_azimuth1) + 0.0
-sun_altitude = float(sun_altitude1) + 0.0
-# sun_azimuth = 144.71 # degrees (South-West)
-# sun_altitude = 13.48 # degrees
-sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
-
-print(sunposition)
 
 testkey=""                      # set if running as test
 if 'TESTKEY' in os.environ:
@@ -667,14 +646,17 @@ def calculate_building_shadow(building_polygon_lat_lon, building_height_meters, 
 
 """
 
-"""@package docstring
+"""
+
+NOTpackage docstring
 see page 43 (paper 26) of doxygen manual
  then p 296  paper 278
 
 """
 
 
-"""@bug
+"""!
+@bug
 
 
 CRS.from_wkt('PROJCS["NAD_1983_StatePlane_New_York_Long_Island_FIPS_3104_Feet",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",40.1666666666667],PARAMETER["central_meridian",-74],PARAMETER["standard_parallel_1",40.6666666666667],PARAMETER["standard_parallel_2",41.0333333333333],PARAMETER["false_easting",984250],PARAMETER["false_northing",0],UNIT["Foot_US",0.304800609601219],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2263"]]')

@@ -1,11 +1,12 @@
-import warnings
+#import warnings
+#warnings.filterwarnings("error", category=UserWarning)
 import os,sys
 import geopandas
 from shapely.geometry import LineString, Polygon
 from pyproj import CRS, Transformer
 
 
-warnings.filterwarnings("error", category=UserWarning)
+
 
 
 ## function for debugging
