@@ -10,7 +10,7 @@ from geotools import *
 
 def makerec3(line_coords,buffer_distance,k):
 
-    Deb("STARTED MAKEREC3")
+    Deb("STARTED MAKEREC4")
     # 1. Define the initial LineString in longitude/latitude
     #line_coords = [(-74.006, 40.7128), (-74.005, 40.7130)]
 #    line_coords = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775)]
@@ -50,7 +50,7 @@ def makerec3(line_coords,buffer_distance,k):
 #    print(f"Original LineString: {original_line}")
 #    print(f"Resulting Polygon (GeoDataFrame): {gdf}")
 
-    fake=k
+    fake=17
     bname = "/tmp/bldg" + str(fake) + ".json"
     pebbles = gdf.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
     with open(bname, "w") as w:
@@ -58,5 +58,5 @@ def makerec3(line_coords,buffer_distance,k):
         w.close()
 
 
-    Deb("LEFT MAKEREC3")
+    Deb("LEFT MAKEREC4")
     return gdf

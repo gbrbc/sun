@@ -42,6 +42,6 @@ def get_position(date, central_lon, central_lat):
     # sun_azimuth = 144.71 # degrees (South-West)
     # sun_altitude = 13.48 # degrees
     sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
-    Deb(f"sunpos az  {sun_azimuth:.2f}   alt {sun_altitude:.2f}")
+    Deb(f"sunpos az  {sun_azimuth:.2f} nyc_az {sun_azimuth-29:.2f}   alt {sun_altitude:.2f}")
 
     return sunposition 

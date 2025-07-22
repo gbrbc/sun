@@ -14,7 +14,7 @@ import pandas as pd
 
 #import geographiclib
 
-from rotateline4 import *
+from rotateline3 import *
 
 from to_coords import *
 
@@ -96,6 +96,16 @@ def wall2polygon2(alist):
 
     #17        assert (0.0+a['azi1'])<=360
 
+###compaz is perpindicular to incoming rays of sun
+
+            if sunaz > 269:
+                compaz=sunaz-90
+            else:
+                compaz=sunaz+90
+
+
+
+
     ##skip rotate
             skiprotate=False
             if skiprotate:
@@ -104,8 +114,8 @@ def wall2polygon2(alist):
             else:
         ## Previously added 180 to line's az
                 wallaz= calculate_azimuth_line(LineString(b))
-                Deb("Rotate "+str(wallaz)+"  to  "+str(sunaz))
-                dshitline = rotateline4(LineString(b), sunaz)
+                Deb("Rotate "+str(wallaz)+"  to  "+str(compaz))
+                dshitline = rotateline3(LineString(b), compaz)
                 #dshit = rotateline(dshit3.geometry.get_coordinates(),wallaz, sunaz)
 
                 dshit4 = gpd.GeoDataFrame(geometry=[dshitline], crs="WGS84")
@@ -121,14 +131,12 @@ def wall2polygon2(alist):
                 w1.close()
 
 
-    #        if sunaz < 180:
-    #            compaz=sunaz+180
-    #        else:
-    #            compaz=sunaz-180
+##https://www.suncalc.org/#/40.7143,-74.006,10/2025.07.21/11:06/45/3
+## says 28m for shadow length
 
-            tandeg=np.rad2deg(np.deg2rad(elevation))
+            tanrad=(math.tan(np.deg2rad(elevation)))
 
-            slength=  height / tandeg
+            slength=  height / tanrad
 
             #Deb("line length ")
             #Deb(dshit4.geometry.length)
@@ -150,16 +158,43 @@ def wall2polygon2(alist):
             deglengthlon=slength * (1/(111111*math.cos(40)))
             deglength=8*3*math.fabs((deglengthlat+deglengthlon))/2
 
-            Deb(f"Shadow len {slength:.2f} -> {deglength:.7f}   {(deglength*111111):.2f}  m")
+            Deb(f"Shadow len {slength:.2f} -> {deglength:.7f}   {(deglength*111111):.2f}  m  hgt {height:.1f} tanrad {tanrad:.1f}")
 
 
 
 
+
+############################################
+##JSON files################################
+############################################
+##prerotN  ##frowallN######bigwallN#########
+########mypoint######bldg17#################
+############################################
+
+##  
+##  
+##  
+##  wall2polygon2
+##    write /tmp/prerotN of each wall of input
+##  
+##    call rotateline for each wall
+##    write /tmp/fromwallN of result
+##
+##  wall2polygon2->makerec3
+##          makes bldg17 -- should be rectangle
+##  
+##    makes /tmp/bigwall after call to makerec
+##    returns union of all shadows
+##  
+##  
+##  
+##  
+##  
 
 
             for k in range(0,1):
     #            newshadow = makerecdeg(dshit4, deglength, k)
-                newshadow = makerec3(dshitline, 7*slength, k) # was b
+                newshadow = makerec3(dshitline, slength, wallnum) # was b
 
                 Deb(type(newshadow))
 
@@ -177,8 +212,15 @@ def wall2polygon2(alist):
                 if wallnum==1:
                     total=newshadow
                 else:
-                    gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=False)
-                    total=gdfunion
+                    elucidate(total)
+                    elucidate(newshadow)
+                    Deb(f"wallnum {wallnum:d}")
+                    try:
+                        gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=False,make_valid=True)
+                        total=gdfunion
+                    except NotImplementedError as e:
+                        # Handle the NotImplementedError exception
+                        print(f"Error: Feature not implemented yet: {e}")                         
 
         total=total.sjoin(total,how="inner")
         return total
@@ -210,23 +252,6 @@ def wall2polygon(wall_list):
 
 
 
-# Function to extract wall segments as (long, lat) tuples
-def extract_wall_coords(geometry):
-#    Deb('extract_wall_coords')
-#    Deb(geometry.geom_type)
-    walls = []
-    if geometry.geom_type == 'LineString':
-        coords = list(geometry.coords)
-        for i in range(len(coords) - 1):
-            walls.append((coords[i], coords[i+1]))
-    elif geometry.geom_type == 'MultiLineString':
-        for line in geometry.geoms:
-            coords = list(line.coords)
-            for i in range(len(coords) - 1):
-                walls.append((coords[i], coords[i+1]))
-    return walls
-
-
 def unwraplist(alist):
     for wall1 in alist:
         for wall2 in wall1:
@@ -255,7 +280,7 @@ def main():
 
     df = []
     df = pd.read_csv(
-        "/Src/sun/path1.csv", sep=",")    
+        "/Src/sun/justge.csv", sep=",")    
 
     df['geometry'] = df['geometry'].apply(loads)
 
