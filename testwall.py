@@ -2,6 +2,7 @@
 #warnings.filterwarnings("error", category=UserWarning)
 import sys
 import os
+import shapely
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString
 from shapely.affinity import translate
 from shapely.wkt import loads
@@ -29,7 +30,7 @@ from geotools import *
 
 
 
-
+print(shapely.__version__)
 
 
 sunposition=get_position('now', -73.97206, 40.75643)

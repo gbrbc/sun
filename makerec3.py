@@ -13,13 +13,13 @@ def makerec3(line_coords,buffer_distance,k):
     Deb("STARTED MAKEREC3")
     # 1. Define the initial LineString in longitude/latitude
     #line_coords = [(-74.006, 40.7128), (-74.005, 40.7130)]
-#    line_coords = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775)]
+    #    line_coords = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775)]
 
 
     original_line = LineString(line_coords)
 
     # 2. Define the buffer distance in meters
-#    buffer_distance = 3
+    #    buffer_distance = 3
 
     # 3. Reproject to a local Azimuthal Equidistant (aeqd) projection for accurate buffering in meters
     #    Center the projection on the midpoint of the line for best accuracy.
@@ -37,6 +37,20 @@ def makerec3(line_coords,buffer_distance,k):
     )
 
     projected_line = transform(project_to_aeqd, original_line)
+
+
+########lands a line 1/2 round globe, using wrong epsg
+
+    if k==10:
+        parallel_line_mitre = original_line.parallel_offset(buffer_distance, 'mitre')
+        gdfp = gpd.GeoDataFrame(geometry=[parallel_line_mitre], crs='wgs84')
+        bname = "/tmp/wilma10.json"
+        pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
+        with open(bname, "w") as w:
+            w.write(pebbles)
+            w.close()
+
+
 
     # 4. Create the buffer (rectangle) in the projected CRS
     buffered_shape = projected_line.buffer(buffer_distance, cap_style=2) # cap_style=2 for flat ends
