@@ -21,8 +21,8 @@ def get_position(date, central_lon, central_lat):
 
 # Possible time to pass to spa2py
     zulu = ""
-#if len(sys.argv) > 1:
-#    zulu = sys.argv[1]
+    if len(sys.argv) > 1:
+       zulu = sys.argv[1]
 
 #print("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu)
 

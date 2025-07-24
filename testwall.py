@@ -1,3 +1,7 @@
+#  -*- compile-command: "env TESTKEY=`incr1o testkey` python3 testwall.py"; compile-read-command: t ;  -*-
+
+
+
 #import warnings
 #warnings.filterwarnings("error", category=UserWarning)
 import sys
@@ -21,7 +25,7 @@ from to_coords import *
 
 
 from geographiclib.geodesic import Geodesic
-from makerec3 import *
+from makerec4 import *
 
 from getpos import *
 from geotools import * 
@@ -30,9 +34,23 @@ from geotools import *
 
 
 
-print(shapely.__version__)
+def Deb(msg=""):
+    """!
+@callergraph
 
 
+
+@callgraph
+    """
+
+    print(f"DebugTW {sys._getframe().f_back.f_lineno}: {msg}", flush=True,file=sys.stderr)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+
+
+os.environ["PROJ_ONLY_BEST_DEFAULT"]="1"
+    
 sunposition=get_position('now', -73.97206, 40.75643)
 Deb(sunposition)
 
@@ -44,7 +62,7 @@ def swappoint(apoint):
 
 
 
-def wall2polygon2(alist):
+def wall2polygon2(alist,height):
     """!
 @callergraph
 
@@ -66,15 +84,14 @@ def wall2polygon2(alist):
 
             wallnum=wallnum+1
 
-        ############################################
-            k=1
+            Deb("############################################")
+            Deb(f"wallnum {wallnum:d}")
 
 
             sunaz=sunposition['azimuth']  #149.617534
             assert (0.0+sunaz)<=360
 
             elevation=1.0*sunposition['altitude']  #13.197431
-            height=45
 
             dshit2 = gpd.GeoDataFrame(geometry=[LineString(b)], crs="WGS84")
 
@@ -93,9 +110,6 @@ def wall2polygon2(alist):
 
             dshit3['centroid']=dshit3['geometry'].centroid
 
-
-
-    #17        assert (0.0+a['azi1'])<=360
 
 ###compaz is perpindicular to incoming rays of sun
 
@@ -124,10 +138,14 @@ def wall2polygon2(alist):
                 dshit=dshit4
 
 
+            result_az = calculate_azimuth_gdf(dshit4)
+            Deb(type(result_az))
+
+            Deb(f"Compare in {compaz:.1f}  out {result_az:.1f}")
 
             barney = dshit4.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
-            with open("/tmp/fromwall" + str(wallnum) + ".json", "w") as w1:
+            with open("/tmp/postrot" + str(wallnum) + ".json", "w") as w1:
                 w1.write(barney)
                 w1.close()
 
@@ -138,13 +156,6 @@ def wall2polygon2(alist):
             tanrad=(math.tan(np.deg2rad(elevation)))
 
             slength=  height / tanrad
-
-            #Deb("line length ")
-            #Deb(dshit4.geometry.length)
-            #Deb("line x ")
-            #Deb(dshit4.geometry)
-
-
 
 
             #############################################
@@ -179,11 +190,12 @@ def wall2polygon2(alist):
 ##    write /tmp/prerotN of each wall of input
 ##  
 ##    call rotateline for each wall
-##    write /tmp/fromwallN of result
+##    write /tmp/postrotN of result
 ##
 ##  wall2polygon2->makerec3
 ##          makes bldg17 -- should be rectangle
 ##  
+##    /tmp/postrectNN out of makerecN
 ##    makes /tmp/bigwall after call to makerec
 ##    returns union of all shadows
 ##  
@@ -194,10 +206,10 @@ def wall2polygon2(alist):
 
 
             for k in range(0,1):
-    #            newshadow = makerecdeg(dshit4, deglength, k)
-                newshadow = makerec3(dshitline, slength, wallnum) # was b
 
-                Deb(type(newshadow))
+                newshadow = makerec4(dshitline, slength, wallnum) # was b
+
+#                Deb(type(newshadow))
 
                 barney = newshadow.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
@@ -205,7 +217,7 @@ def wall2polygon2(alist):
 
 
 
-                with open("/tmp/bigwall" + str(wallnum) + ".json", "w") as w1:
+                with open("/tmp/postrect" + str(wallnum) + ".json", "w") as w1:
                     w1.write(barney)
                     w1.close()
 
@@ -215,7 +227,7 @@ def wall2polygon2(alist):
                 else:
                     elucidate(total)
                     elucidate(newshadow)
-                    Deb(f"wallnum {wallnum:d}")
+
                     try:
                         gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=False,make_valid=True)
                         total=gdfunion
@@ -281,7 +293,11 @@ def main():
 
     df = []
     df = pd.read_csv(
-        "/Src/sun/justge.csv", sep=",")    
+        "/Src/sun/path1.csv", sep=",")    
+
+    dfrows=len(df)
+    Deb(f"df rows {dfrows:d}")
+
 
     df['geometry'] = df['geometry'].apply(loads)
 
@@ -295,16 +311,24 @@ def main():
     print(dshit12[['NAME', 'walls']].iloc[0])
 #    print(dshit12)
 
-    Deb(type(dshit12[['walls']].iloc[0])   )
+#    Deb(type(dshit12[['walls']].iloc[0])   )
     prepredlist=dshit12[['walls']]
-    Deb(type(prepredlist))
-    Deb(type(prepredlist.iloc[0]))
+#    Deb(type(prepredlist))
+#    Deb(type(prepredlist.iloc[0]))
     predlist=pd.Series(prepredlist.iloc[0])
     dlist=predlist.to_list()
-    Deb(dlist)
+#    Deb(dlist)
+    
+####get height
+    rower=0
+    height=int(dshit12['Ground Elevation'].iloc[rower]+0)
+    Deb(dshit12['NAME'].iloc[rower])
+    Deb(f"height  {height:d}")
+    
 
+    assert height>0
 
-    dshit8=wall2polygon2(dlist)   
+    dshit8=wall2polygon2(dlist,height)   
 #    dshit8=unwraplist(dlist)   
 
 
@@ -319,10 +343,10 @@ def main():
 
     Deb(type(dshit8))
     Deb(dshit8.geom_type)
-    dshit9=gpd.GeoDataFrame(geometry=[dshit8])
+    dshit9=gpd.GeoDataFrame(geometry=[dshit8],crs="EPSG:4326")
 
         
-    barney = dshit9.to_json(to_wgs84=False)  # =True)  #  crs="EPSG:3627"
+    barney = dshit9.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 #    barney = dshit9.to_file("/tmp/total99.json",driver='GeoJSON')
 
     with open("/tmp/total" + str(99) + ".json", "w") as w1:
@@ -330,7 +354,7 @@ def main():
         w1.close()
 
 
-    dshit9.set_crs("EPSG:2263",inplace=True)
+#    dshit9.set_crs("EPSG:2263",inplace=True)
     dshit8=dshit9
     dshit8['centroid']=dshit8['geometry'].centroid
     Deb(type(dshit8['centroid']))
@@ -428,4 +452,34 @@ from a shapely linestring I want to create a rectangle by duplicating the linest
 ##135 e 50    dlist = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775), (-73.97153870727, 40.75651820027), (-73.971458333347, 40.756484232235), (-73.971510010991, 40.75641352834), (-73.971514021216, 40.756415223183), (-73.971564459855, 40.756436539799), (-73.971612762728, 40.756370451916), (-73.971558313901, 40.75634744048), (-73.971580059362, 40.756317688647), (-73.97160519838, 40.756283293739), (-73.971755861794, 40.756346968589), (-73.971966606825, 40.756436035918), (-73.971917137126, 40.75650372026), (-73.971842763583, 40.756472287977), (-73.971820192309, 40.756503168892), (-73.971808961763, 40.756518534168), (-73.971834435727, 40.756529299637), (-73.971858272213, 40.756539374012), (-73.971847763277, 40.756553752515), (-73.971817644113, 40.75659496128), (-73.971647241465, 40.756559142392), (-73.97161694632, 40.75659895798), (-73.971591643035, 40.756593410934)]
 
 ##    dlist = [(-73.946942654932 ,40.806222154761), (-73.946977239811, 40.80617461534), (-73.947156723315, 40.806250005546), ( -73.947138469349, 40.806275095875), (-73.947122138526, 40.806297544119),( -73.947066845689, 40.8062743192),( -73.946942654932, 40.806222154761)]
+'''
+
+
+'''
+kimberly or what is in path138.csv
+
+shadow wrong way
+3
+4
+7
+8
+11
+12
+
+
+
+coords = [(0, 0), (0, 2), (1, 1), (2, 2), (2, 0), (1, 1), (0, 0)]
+bowtie = Polygon(coords)
+clean = bowtie.buffer(0)
+<MULTIPOLYGON (((0 0, 0 2, 1 1, 0 0)), ((1 1, 2 2, 2 0, 1 1)))>
+len(clean.geoms)
+list(clean.geoms[0].exterior.coords)
+list(clean.geoms[1].exterior.coords)
+
+
+"shapely.buffer" how to determine the left vs right side of a "linestring" which is ""single_sided=True" to choose "distance" being negative or positive
+
+what is the formula for direction of "linestring" with regard to "shapely.buffer" and "geos"
+
+
 '''

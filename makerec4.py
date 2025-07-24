@@ -27,9 +27,9 @@ def Deb(msg=""):
 
 def makerec4(line_coords,buffer_distance,k):
 
-## FIX wgx84/2263     32618
-## transformer2m = Transformer.from_crs("EPSG:2263", "EPSG:32618")
-## transformer2lat = Transformer.from_crs( "EPSG:32618","EPSG:2263")
+## FIX wgx84/4326     32618
+## transformer2m = Transformer.from_crs("EPSG:4326", "EPSG:32618")
+## transformer2lat = Transformer.from_crs( "EPSG:32618","EPSG:4326")
 
 ## transformer2m(2,3)
 ## transformer2lat(3,2)
@@ -41,6 +41,11 @@ def makerec4(line_coords,buffer_distance,k):
 
 
     original_line = LineString(line_coords)
+
+    l_az=calculate_azimuth_line(line_coords)
+    Deb(f"makerec wallnum {k:d} az {l_az:.1f}")
+    if l_az >= 180:
+         buffer_distance = -buffer_distance 
 
     # 2. Define the buffer distance in meters
     #    buffer_distance = 3
@@ -54,8 +59,12 @@ def makerec4(line_coords,buffer_distance,k):
 ###NEED TO LOOK AT DIRECTIONS MORE CAREFULLY
 ##https://pyproj4.github.io/pyproj/stable/api/transformer.html    
 
-    transformer2m = Transformer.from_crs("EPSG:2263", "EPSG:32618", always_xy=True)
-    transformer2lat = Transformer.from_crs( "EPSG:32618","EPSG:2263", always_xy=True)
+    transformer2m = Transformer.from_crs(crs_from="EPSG:4326", crs_to="EPSG:32618", always_xy=True,only_best=True)
+ # ,errcheck=True
+
+    transformer2lat = Transformer.from_crs( "EPSG:32618","EPSG:4326", always_xy=True,only_best=True)
+ # ,errcheck=True
+
 
     centroid = original_line.centroid
 
@@ -79,7 +88,7 @@ def makerec4(line_coords,buffer_distance,k):
     projected_line=transform(transformer2m.transform,original_line)
 
 ########lands a line 1/2 round globe, using wrong epsg
-
+    """
     if k==10:
         parallel_line_mitre = original_line.parallel_offset(buffer_distance, 'mitre')
         gdfp = gpd.GeoDataFrame(geometry=[parallel_line_mitre], crs='wgs84')
@@ -88,17 +97,22 @@ def makerec4(line_coords,buffer_distance,k):
         with open(bname, "w") as w:
             w.write(pebbles)
             w.close()
-
+    """
 
 
     # 4. Create the buffer (rectangle) in the projected CRS
-    buffered_shape = projected_line.buffer(buffer_distance, cap_style=2) # cap_style=2 for flat ends
+    buffered_shape = projected_line.buffer(buffer_distance, cap_style=2,single_sided=True) # cap_style=2 for flat ends
 
     # 5. Reproject the buffered shape back to longitude/latitude (WGS84)
 #    final_polygon = transform(project_to_wgs84, buffered_shape)
     final_polygon = transform(transformer2lat.transform,buffered_shape)
     # 6. Create a GeoDataFrame from the polygon
+
+##    final_polygon['newwallnum']=k
+
+
     gdf = gpd.GeoDataFrame(geometry=[final_polygon], crs='epsg:4326')
+
 
 #    print(f"Original LineString: {original_line}")
 #    print(f"Resulting Polygon (GeoDataFrame): {gdf}")

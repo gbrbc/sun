@@ -31,7 +31,7 @@ def Deb(msg=""):
 
 
 
-def rotateline2(line,current_azimuth_degrees,new_azimuth_degrees):
+def rotateline2(line,new_azimuth_degrees):
 
     """!
 @callergraph
