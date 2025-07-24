@@ -13,8 +13,9 @@ import subprocess
 import numpy as np
 import pandas as pd
 
-from pybdshadow import *
-from analysis import *
+from geotools import *
+#from pybdshadow import *
+#from analysis import *
 
 
 
@@ -412,7 +413,7 @@ for fake in range(1, 8):
 ## float(shapely.__version__) is 2.0.6
 
 
-        if shapely.__version__ != "2.0.6":
+        if False:
             gs1 = gpd.GeoSeries([Polygon(list1)])
             sim1 = gs1.simplify_coverage(50, simplify_coverage=False)
 

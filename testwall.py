@@ -1,4 +1,4 @@
-#  -*- compile-command: "env TESTKEY=`incr1o testkey` python3 testwall.py"; compile-read-command: t ;  -*-
+#  -*- compile-command: "env TESTKEY=`incr1o testkey` python3 testwall.py"; compile-read-command: t ; grep-command: "grep -d skip -I -Hni      `./active`" ; -*-
 
 
 
@@ -272,6 +272,54 @@ def unwraplist(alist):
 
 
 def main():
+    df = pd.read_csv(
+        "/Src/sun/justnan.csv", sep=",")    
+
+
+    df['geometry'] = df['geometry'].apply(loads)
+
+    pd.set_option('display.max_colwidth',None)
+    pd.set_option('display.max_columns',None)
+    
+    pd.set_option('display.max_rows',None)
+
+
+
+
+
+    dfrows=len(df)
+
+
+
+
+
+    Deb(f"df rows {dfrows:d}")
+    for rower in range(0,dfrows):
+
+        print(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
+
+        newshadow=mainengine(df,rower)
+        if rower==0:
+            totalpack=newshadow
+        else:
+            try:
+                gdfunion=gpd.overlay(totalpack,newshadow,how='union',keep_geom_type=False,make_valid=True)
+                totalpack=gdfunion
+            except NotImplementedError as e:
+                        # Handle the NotImplementedError exception
+                print(f"Error: Feature not implemented yet: {e}")
+
+    Deb(totalpack)
+
+    barney = totalpack.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
+
+    with open("/tmp/totalpack.json", "w") as w1:
+        w1.write(barney)
+        w1.close()
+
+
+
+def mainengine(df,rower):
     """!
 @callergraph
 
@@ -291,36 +339,26 @@ def main():
 #############################################
 #############################################
 
-    df = []
-    df = pd.read_csv(
-        "/Src/sun/path1.csv", sep=",")    
-
-    dfrows=len(df)
-    Deb(f"df rows {dfrows:d}")
+#    df = []
+#    rower=0
 
 
-    df['geometry'] = df['geometry'].apply(loads)
-
-    pd.set_option('display.max_colwidth',None)
-    pd.set_option('display.max_columns',None)
-    
-    pd.set_option('display.max_rows',None)
     dshit12 = gpd.GeoDataFrame(df, crs="WGS84")
     dshit12['walls'] = dshit12.geometry.boundary.apply(extract_wall_coords)
 
-    print(dshit12[['NAME', 'walls']].iloc[0])
+#    print(dshit12[['NAME', 'walls']].iloc[rower])
 #    print(dshit12)
 
-#    Deb(type(dshit12[['walls']].iloc[0])   )
+#    Deb(type(dshit12[['walls']].iloc[rower])   )
     prepredlist=dshit12[['walls']]
 #    Deb(type(prepredlist))
-#    Deb(type(prepredlist.iloc[0]))
-    predlist=pd.Series(prepredlist.iloc[0])
+#    Deb(type(prepredlist.iloc[rower]))
+    predlist=pd.Series(prepredlist.iloc[rower])
     dlist=predlist.to_list()
 #    Deb(dlist)
     
 ####get height
-    rower=0
+
     height=int(dshit12['Ground Elevation'].iloc[rower]+0)
     Deb(dshit12['NAME'].iloc[rower])
     Deb(f"height  {height:d}")
@@ -349,17 +387,17 @@ def main():
     barney = dshit9.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 #    barney = dshit9.to_file("/tmp/total99.json",driver='GeoJSON')
 
-    with open("/tmp/total" + str(99) + ".json", "w") as w1:
+    with open("/tmp/total" + str(rower) + ".json", "w") as w1:
         w1.write(barney)
         w1.close()
 
 
 #    dshit9.set_crs("EPSG:2263",inplace=True)
-    dshit8=dshit9
-    dshit8['centroid']=dshit8['geometry'].centroid
-    Deb(type(dshit8['centroid']))
-    Deb(dshit8['centroid'])
-
+##?    dshit8=dshit9
+##?    dshit8['centroid']=dshit8['geometry'].centroid
+#    Deb(type(dshit8['centroid']))
+#    Deb(dshit8['centroid'])
+    return dshit9
 
 main()
 
@@ -481,5 +519,8 @@ list(clean.geoms[1].exterior.coords)
 
 what is the formula for direction of "linestring" with regard to "shapely.buffer" and "geos"
 
+
+
+where to find algorithm to create a 5 meter line with an azimuth every 45 degrees from 0 to 360 without using libraries at the long/lat point -74.006,40.7143
 
 '''
