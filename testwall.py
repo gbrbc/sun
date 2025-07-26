@@ -19,13 +19,13 @@ import pandas as pd
 
 #import geographiclib
 
-from rotateline3 import *
+from rotateline import *
 
 from to_coords import *
 
 
 from geographiclib.geodesic import Geodesic
-from makerec4 import *
+from makerec import *
 
 from getpos import *
 from geotools import * 
@@ -130,7 +130,7 @@ def wall2polygon2(alist,height):
         ## Previously added 180 to line's az
                 wallaz= calculate_azimuth_line(LineString(b))
                 Deb("Rotate "+str(wallaz)+"  to  "+str(compaz))
-                dshitline = rotateline3(LineString(b), compaz)
+                dshitline = rotateline(LineString(b), compaz)
                 #dshit = rotateline(dshit3.geometry.get_coordinates(),wallaz, sunaz)
 
                 dshit4 = gpd.GeoDataFrame(geometry=[dshitline], crs="WGS84")
@@ -207,7 +207,7 @@ def wall2polygon2(alist,height):
 
             for k in range(0,1):
 
-                newshadow = makerec4(dshitline, slength, wallnum) # was b
+                newshadow = makerec(dshitline, slength, wallnum) # was b
 
 #                Deb(type(newshadow))
 

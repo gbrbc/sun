@@ -25,7 +25,7 @@ def Deb(msg=""):
 
 
 
-def makerec4(line_coords,buffer_distance,k):
+def makerec(line_coords,buffer_distance,k):
 
 ## FIX wgx84/4326     32618
 ## transformer2m = Transformer.from_crs("EPSG:4326", "EPSG:32618")
@@ -34,7 +34,7 @@ def makerec4(line_coords,buffer_distance,k):
 ## transformer2m(2,3)
 ## transformer2lat(3,2)
 
-    Deb("STARTED MAKEREC4")
+    Deb("STARTED MAKEREC")
 
     # 1. Define the initial LineString in longitude/latitude
 
@@ -126,5 +126,5 @@ def makerec4(line_coords,buffer_distance,k):
         w.close()
 
 
-    Deb("LEFT MAKEREC4")
+    Deb("LEFT MAKEREC")
     return gdf

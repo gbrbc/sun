@@ -31,7 +31,7 @@ def Deb(msg=""):
 
 
 
-def rotateline3(line,new_azimuth_degrees):
+def rotateline(line,new_azimuth_degrees):
 
     """!
 @callergraph
@@ -42,7 +42,7 @@ def rotateline3(line,new_azimuth_degrees):
     """
 
 
-    Deb(f"In rotateline3  line  {line}   newdeg {new_azimuth_degrees}")
+    Deb(f"In rotateline  line  {line}   newdeg {new_azimuth_degrees}")
     if not isinstance(line,LineString):
         raise TypeError("supply LineString instead")
 
