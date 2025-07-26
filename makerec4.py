@@ -45,7 +45,8 @@ def makerec4(line_coords,buffer_distance,k):
     l_az=calculate_azimuth_line(line_coords)
     Deb(f"makerec wallnum {k:d} az {l_az:.1f}")
     if l_az >= 180:
-         buffer_distance = -buffer_distance 
+         Deb('MR negate buffer')
+#         buffer_distance = -buffer_distance 
 
     # 2. Define the buffer distance in meters
     #    buffer_distance = 3

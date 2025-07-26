@@ -523,4 +523,7 @@ what is the formula for direction of "linestring" with regard to "shapely.buffer
 
 where to find algorithm to create a 5 meter line with an azimuth every 45 degrees from 0 to 360 without using libraries at the long/lat point -74.006,40.7143
 
+https://geographiclib.sourceforge.io/cgi-bin/GeodSolve
+
+
 '''
