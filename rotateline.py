@@ -91,7 +91,7 @@ def rotateline(line,new_azimuth_degrees):
 
 #    rotated_line = rotate(line, rotation_angle_degrees, origin='center')
 
-    if not os.path.exists("/tmp/bf455.json"):
+    if current_azimuth_degrees > 90 and not os.path.exists("/tmp/bf455.json"):
       #  Deb("Rotate1")
         geo55=gpd.GeoSeries([line],[rotated_line])
       #  Deb("Rotate2")
