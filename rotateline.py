@@ -92,19 +92,19 @@ def rotateline(line,new_azimuth_degrees):
 #    rotated_line = rotate(line, rotation_angle_degrees, origin='center')
 
     if not os.path.exists("/tmp/bf455.json"):
-        Deb("Rotate1")
+      #  Deb("Rotate1")
         geo55=gpd.GeoSeries([line],[rotated_line])
-        Deb("Rotate2")
-        gdf55 = gpd.GeoDataFrame(geo55, geometry=0) # 'geometry=0' specifies the column containing the geometries
-        Deb("Rotate3")
+      #  Deb("Rotate2")
+        gdf55 = gpd.GeoDataFrame(geo55, geometry=0, crs="WGS84") # 'geometry=0' specifies the column containing the geometries
+      #  Deb("Rotate3")
         gdf55.to_file("/tmp/bf455.json", driver="GeoJSON")
-        Deb("Rotate4")
+      #  Deb("Rotate4")
         geo66=gpd.GeoSeries(line_centroid)
-        Deb("Rotate5")
-        gdf66 = gpd.GeoDataFrame(geo66, geometry=0) # 'geometry=0' specifies the column containing the geometries
-        Deb("Rotate6")
+      #  Deb("Rotate5")
+        gdf66 = gpd.GeoDataFrame(geo66, geometry=0, crs="WGS84") # 'geometry=0' specifies the column containing the geometries
+      #  Deb("Rotate6")
         gdf66.to_file("/tmp/mypoint.json")
-        Deb("Rotate7")
+      #  Deb("Rotate7")
 
 
 #    Deb(f"Rotated LineString: {rotated_line}")
