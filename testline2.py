@@ -2,6 +2,30 @@ from shapely.geometry import Polygon, MultiPolygon, Point, LineString
 import geopandas as gpd
 from geopy.distance import geodesic
 from geopy.point import Point
+import geopy.distance
+
+def howlong(point1, point2):
+    print(type(point1))
+    print(type(point2))
+## the args arrive as type==geopy.point.Point
+
+    a=LineString([point1, point2])
+    fgh=geopy.distance.geodesic(a.coords[0],a.coords[-1]).meters
+    abc=geopy.distance.geodesic(point1, point2).meters
+    print(f"DaLength {abc:.3f}  vs  {fgh:.3f}")
+
+
+def howlongline(aline):
+    if not isinstance(aline,LineString):
+        raise  TypeError("supply LineString instead")
+
+    fgh=geopy.distance.geodesic(a.coords[0],a.coords[-1]).meters
+    return fgh
+
+
+
+
+
 
 # 1. Define your centroid (latitude, longitude)
 centroid_lat =  40.75643  # Example: New York City latitude
@@ -29,16 +53,21 @@ for bearing in range(0, 361, 20):
     # The opposite bearing is (bearing + 180) % 360 to keep it within 0-360 range
     opposite_bearing = (bearing + 180) % 360
     point2 = geodesic(kilometers=half_segment_length_km).destination(point=centroid, bearing=opposite_bearing)
-
+    print("#$#", type(point2))
     # Store the line segment (you might want to order them or just store as a pair)
     generated_line_segments.append((point1, point2))
+    jlk=(point1, point2)
+    print("$#$JLK ",type(jlk))
+    howlong(point1, point2)
+
+
 
 print(f"Generated {len(generated_line_segments)} line segments with centroid as midpoint:")
 ls=1
 for i, (p1, p2) in enumerate(generated_line_segments):
 #    print(f"Line {i+1}:")
 
-    print(f"line{ls} = LineString([( {p1.longitude:.7f},{p1.latitude:.7f}),({p2.longitude:.7f}, {p2.latitude:.7f})])")
+    print(f"line{ls} = LineString([( {p1.longitude:.9f},{p1.latitude:.9f}),({p2.longitude:.9f}, {p2.latitude:.9f})])")
 
     gorgo1= gpd.GeoDataFrame(geometry=[LineString([(p1.longitude,p1.latitude),(p2.longitude,p2.latitude)])], crs="WGS84")    
 

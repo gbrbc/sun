@@ -4,6 +4,7 @@ from shapely.geometry import Polygon, MultiPolygon, Point, LineString
 import math
 import subprocess
 from geographiclib.geodesic import Geodesic
+import geopy.distance
 
 
 """
@@ -41,6 +42,7 @@ https://geographiclib.sourceforge.io/Python/doc/examples.html?highlight=azimuth
 """
 
 
+#############################################
 
 
 def Deb(msg=""):
@@ -57,7 +59,7 @@ def Deb(msg=""):
     sys.stderr.flush()
 
 
-
+#############################################
 
 
 
@@ -69,12 +71,20 @@ def Deb(msg=""):
 
 @callgraph
 """
+#############################################
+
 def calculate_azimuth(ax, ay, bx, by):
     """Computes the bearing in degrees from the point A(ax,ay) to the point B(bx,by)."""
     a=Geodesic.WGS84.Inverse(ay,  ax,  by,  bx, outmask=1929)
     prelim=a['azi1']
-#    if prelim < 0:
-#        prelim=360+prelim
+    if prelim==360 or prelim==180:
+        return 0
+    if prelim < 0:
+        prelim=360+prelim
+    if prelim >= 180:
+        prelim=prelim-180
+    if prelim==360 or prelim==180:
+        return 0
 
     return prelim
 
@@ -85,15 +95,60 @@ def calculate_azimuth(ax, ay, bx, by):
     return math.degrees(theta)
 
 
+#############################################
+
+
+### are these two az's close?
+def closeaz(az1,az2):
+
+    if az1==360 or az1==180:
+        az1=0
+    if az2==360 or az2==180:
+        az2=0
+
+    if closeto(az1,az2,5):
+        return True
+
+    az1a=az1
+    az2a=az2
+
+    if az1 <= 0:
+        az1a=az1+180
+        if closeto(az1a,az2,5):
+            return True
+
+    if az2 <= 0:
+        az2a=az2+180
+        if closeto(az1,az2a,5):
+            return True
+
+    if closeto(az1a,az2a,5):
+        return True
+
+    if az1==az1a and az1>= 180:
+        az1a=az1-180
+        if closeto(az1a,az2,5):
+            return True
+
+
+    if az2==az2a and az2>= 180:
+        az2a=az2-180
+        if closeto(az1,az2a,5):
+            return True
+
+    return False
+
+#############################################
+
 ##is   abs(a) - abs(b) < c
 def closeto(a,b,c):
-    Deb(f" {abs(a)}  {abs(b)}  {c}  { abs(abs(a) - abs(b)) < c }")
+#    Deb(f" {abs(a):.2f}  {abs(b):.2f}  {c}  { abs(abs(a) - abs(b)) < c }")
     if   abs(abs(a) - abs(b)) < c :
-        return 1
+        return True
     else:
-        return 0
+        return False
 
-
+#############################################
 
 def calculate_azimuth_line(aline):
     if not isinstance(aline,LineString):
@@ -106,6 +161,7 @@ def calculate_azimuth_line(aline):
     return calculate_azimuth(first_point.x, first_point.y, last_point.x, last_point.y)
     
 
+#############################################
 
 def get_az_el(central_lon, central_lat):
     zulu = ""
@@ -134,11 +190,15 @@ def get_az_el(central_lon, central_lat):
     print(sunposition)
     return sunposition
 
+#############################################
 
 def elucidate(atype):
     Deb(atype.geom_type)
     Deb(atype.geom_type.unique)
     
+#############################################
+
+
 
 # Function to extract wall segments as (long, lat) tuples
 def extract_wall_coords(geometry):
@@ -157,7 +217,13 @@ def extract_wall_coords(geometry):
     return walls
 
 
+#############################################
+
+
 import math
+
+
+
 
 def calculate_azimuthengine(x1, y1, x2, y2):
     dx = x2 - x1
@@ -170,9 +236,35 @@ def calculate_azimuthengine(x1, y1, x2, y2):
     return azimuth
 
 
+#############################################
+
+
 def calculate_azimuth_gdf(gdf):
     gdf['azimuth'] = gdf.apply(lambda row: calculate_azimuthengine(row['geometry'].coords[0][0],
                                                              row['geometry'].coords[0][1],
                                                              row['geometry'].coords[1][0],
                                                              row['geometry'].coords[1][1]), axis=1)
     return gdf['azimuth'].iloc[0]
+
+
+#############################################
+
+def howlong(point1a, point2a):
+##    a=LineString([point1, point2])
+    Deb(type(point1a))
+    point1=geopy.point.Point(point1a)
+    point2=geopy.point.Point(point2a)
+    Deb(type(point1))
+    Deb(type(point2))
+    abc=geopy.distance.geodesic(point1, point2).meters
+    return abc
+
+
+#############################################
+
+def howlongline(a):
+    if not isinstance(a,LineString):
+        raise  TypeError("supply LineString instead")
+
+    fgh=geopy.distance.geodesic(a.coords[0],a.coords[-1]).meters
+    return fgh
