@@ -5,7 +5,7 @@ import math
 import subprocess
 from geographiclib.geodesic import Geodesic
 import geopy.distance
-
+import geopandas as gpd
 
 """
 
@@ -315,3 +315,22 @@ def isflip(aline):
 
     return isinrange(f_p.x, 38,41) and  isinrange(l_p.x, 38,41) and  isinrange(f_p.y, -75,-72) and isinrange(l_p.y, -75,-72)
     
+
+#############################################
+
+def NANfree(a):
+    pass
+
+
+    
+    
+
+#############################################
+
+
+def writeWGS(aline,afile):
+    gdfp = gpd.GeoDataFrame(geometry=[aline], crs='wgs84')
+    pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
+    with open(afile, "w") as w:
+        w.write(pebbles)
+        w.close()
