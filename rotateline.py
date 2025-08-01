@@ -1,9 +1,28 @@
+
+'''
 import os,sys
 import geopandas as gpd
-from shapely.geometry import LineString,Point
-from shapely.affinity import rotate
-import math
+from shapely.geometry import LineString   #,Point
+#from shapely.affinity import rotate
+#import math
 from geotools import * 
+from geopy.distance import geodesic
+from geopy.point import Point as GeopyPoint
+'''
+
+from shapely.geometry import Polygon, MultiPolygon, Point, LineString
+import geopandas as gpd
+from geopy.distance import geodesic
+from geopy.point import Point
+from geographiclib.geodesic import Geodesic
+import geopy.distance
+
+
+# not in testline2
+import sys
+from geotools import calculate_azimuth_line,closeaz
+from geopy.point import Point as GeopyPoint
+
 
 """!
 @callergraph
@@ -45,6 +64,57 @@ def rotateline(line,new_azimuth_degrees):
     Deb(f"In rotateline  line  {line}   newdeg {new_azimuth_degrees}")
     if not isinstance(line,LineString):
         raise TypeError("supply LineString instead")
+
+#    startingpoint=line.coords[0]
+
+
+# 1. Define your centroid (latitude, longitude)    
+    Deb(line.centroid)
+    Deb(type(line.centroid))
+    centroid0=line.centroid
+    long=centroid0.y
+    lat=centroid0.x
+    centroid2 = GeopyPoint(latitude=lat, longitude=long)
+    Deb(f"STEP1  cent {centroid2}")
+    Deb(type(centroid2))
+
+
+# 2. Choose the TOTAL length of your lines (e.g., 200 kilometers)
+    givenlen=geopy.distance.geodesic(line.coords[0],line.coords[-1]).meters
+
+    az=new_azimuth_degrees
+###=calculate_azimuth_line(line)
+
+# 3. Iterate through angles from 0 to 180 degrees
+
+    Deb(f"Centr  {centroid2 }   {type(centroid2)}")
+
+    point1 = geodesic(meters=givenlen/2).destination(point=centroid2, bearing=az)
+
+    print(f"STEP2  pt1 {point1}")
+    print(type(point1))
+
+
+    opposite_az = (az + 180) % 360
+    point2 = geodesic(meters=givenlen/2).destination(point=centroid2, bearing=opposite_az)
+
+    Deb(f"STEP2a  pt1 {point2}")
+    Deb(type(point2))
+
+
+
+    Deb(f"Line3  p1  {point1}   p2 {point2}")
+    resultaz= calculate_azimuth_line(LineString([point1,point2]))
+
+    Deb(f"az  {az}   opaz {opposite_az}  result {resultaz:.2f}")
+
+
+    return LineString([point1,point2])
+
+
+    '''
+
+
 
     # Create a sample LineString
 #    line = LineString([(0, 0), (10, 5)])
@@ -109,10 +179,11 @@ def rotateline(line,new_azimuth_degrees):
 
 #    Deb(f"Rotated LineString: {rotated_line}")
     Deb(f"Rotate Result Azimuth (degrees): {calculate_azimuth_line(rotated_line):1f}  vs   newdeg {new_azimuth_degrees}")
-
+    assert closeaz(new_azimuth_degrees,calculate_azimuth_line(rotated_line))
 #    if rotation_angle_degrees<=0 or rotation_angle_degrees>360:
 #        raise TypeError("az below 0 or over 360")
 
 
 
     return rotated_line
+    '''
