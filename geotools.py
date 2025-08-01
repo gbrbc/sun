@@ -100,13 +100,14 @@ def calculate_azimuth(ax, ay, bx, by):
 
 ### are these two az's close?
 def closeaz(az1,az2):
+    closemeans=20
 
     if az1==360 or az1==180:
         az1=0
     if az2==360 or az2==180:
         az2=0
 
-    if closeto(az1,az2,5):
+    if closeto(az1,az2,closemeans):
         return True
 
     az1a=az1
@@ -114,26 +115,26 @@ def closeaz(az1,az2):
 
     if az1 <= 0:
         az1a=az1+180
-        if closeto(az1a,az2,5):
+        if closeto(az1a,az2,closemeans):
             return True
 
     if az2 <= 0:
         az2a=az2+180
-        if closeto(az1,az2a,5):
+        if closeto(az1,az2a,closemeans):
             return True
 
-    if closeto(az1a,az2a,5):
+    if closeto(az1a,az2a,closemeans):
         return True
 
     if az1==az1a and az1>= 180:
         az1a=az1-180
-        if closeto(az1a,az2,5):
+        if closeto(az1a,az2,closemeans):
             return True
 
 
     if az2==az2a and az2>= 180:
         az2a=az2-180
-        if closeto(az1,az2a,5):
+        if closeto(az1,az2a,closemeans):
             return True
 
     return False
@@ -268,3 +269,49 @@ def howlongline(a):
 
     fgh=geopy.distance.geodesic(a.coords[0],a.coords[-1]).meters
     return fgh
+
+
+#############################################
+
+## ensure l < a < h
+def isinrange(a,l,h):
+    return ( a > l ) and ( a < h)
+
+
+## long/lat
+def notflip(aline):
+    if not isinstance(aline,LineString):
+        raise  TypeError("supply LineString instead")
+
+    f_p = Point(aline.coords[0])
+    l_p = Point(aline.coords[-1]) # Or line.coords[1] for a simple two-point line
+
+    Deb(f"f p x {f_p.x}")
+    Deb(f"f p y {f_p.y}")
+    Deb(f"l p x {l_p.x}")
+    Deb(f"l p y {l_p.y}")
+
+    Deb(isinrange(f_p.x, -75,-72))
+    Deb(isinrange(f_p.y, 38,41))
+    Deb(isinrange(l_p.x, -75,-72))
+    Deb(isinrange(l_p.y, 38,41))
+
+    return isinrange(f_p.y, 38,41) and  isinrange(l_p.y, 38,41) and  isinrange(f_p.x, -75,-72) and isinrange(l_p.x, -75,-72)
+    
+
+
+## is in old order from last century   lat/long
+def isflip(aline):
+    if not isinstance(aline,LineString):
+        raise  TypeError("supply LineString instead")
+
+    f_p = Point(aline.coords[0])
+    l_p = Point(aline.coords[-1]) # Or line.coords[1] for a simple two-point line
+
+    Deb(f"f p x {f_p.x}")
+    Deb(f"f p y {f_p.y}")
+    Deb(f"l p x {l_p.x}")
+    Deb(f"l p y {l_p.y}")
+
+    return isinrange(f_p.x, 38,41) and  isinrange(l_p.x, 38,41) and  isinrange(f_p.y, -75,-72) and isinrange(l_p.y, -75,-72)
+    
