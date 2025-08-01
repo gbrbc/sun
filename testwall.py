@@ -1,3 +1,4 @@
+#!/opt/local/bin/python3 
 #  -*- compile-command: "env TESTKEY=`incr1o testkey` python3 testwall.py"; compile-read-command: t ; grep-command: "grep -d skip -I -Hni      `./active`" ; -*-
 
 
@@ -19,7 +20,11 @@ import pandas as pd
 
 #import geographiclib
 
-from rotateline import *
+#from rotateline import *
+##for new rotate
+from testline3 import *
+
+
 
 from to_coords import *
 
@@ -130,7 +135,19 @@ def wall2polygon2(alist,height):
         ## Previously added 180 to line's az
                 wallaz= calculate_azimuth_line(LineString(b))
                 Deb("Rotate "+str(wallaz)+"  to  "+str(compaz))
-                dshitline = rotateline(LineString(b), compaz)
+
+#    Deb(isinrange(f_p.x, -75,-72))
+                assert (-74 > -75)
+                assert (-74 < -72)
+                assert isinrange(-74,-75,-72)
+                assert isinrange(40,38,41)
+
+                assert notflip(LineString(b))
+
+                dshitline = rotateline_line(LineString(b), compaz)
+
+                assert notflip(LineString(dshitline))
+
                 #dshit = rotateline(dshit3.geometry.get_coordinates(),wallaz, sunaz)
 
                 dshit4 = gpd.GeoDataFrame(geometry=[dshitline], crs="WGS84")
@@ -229,11 +246,15 @@ def wall2polygon2(alist,height):
                     elucidate(newshadow)
 
                     try:
-                        gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=False,make_valid=True)
+                        gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=True,make_valid=True)
                         total=gdfunion
                     except NotImplementedError as e:
                         # Handle the NotImplementedError exception
-                        print(f"Error: Feature not implemented yet: {e}")                         
+                        print(f"Error: Feature not implemented yet: {e}")
+
+                    except shapely.errors.GEOSException as e:
+                        print(f"Error: Feature not implemented yet: {e}")
+
 
         total=total.sjoin(total,how="inner")
         return total
