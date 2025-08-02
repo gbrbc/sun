@@ -337,10 +337,11 @@ def main():
     for rower in range(0,dfrows):
 
         print(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
+        logme(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
 
         newshadow=mainengine(df,rower)
 
-
+        writeGDF(newshadow,"/tmp/site"+str(rower)+".json")
 
         Deb("newshadow")
         Deb(newshadow)

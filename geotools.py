@@ -334,3 +334,12 @@ def writeWGS(aline,afile):
     with open(afile, "w") as w:
         w.write(pebbles)
         w.close()
+
+
+        
+
+def writeGDF(gdfp,afile):
+    pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
+    with open(afile, "w") as w:
+        w.write(pebbles)
+        w.close()
