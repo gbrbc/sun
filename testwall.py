@@ -34,6 +34,7 @@ from makerec import *
 
 from getpos import *
 from geotools import * 
+from geopy.distance import geodesic
 
 
 
@@ -78,6 +79,8 @@ def wall2polygon2(alist,height):
 
 
     global total
+    global compaz
+    global sunaz
 
     wallnum=0
     
@@ -185,7 +188,7 @@ def wall2polygon2(alist,height):
 
             deglengthlat=slength * (1/111111)
             deglengthlon=slength * (1/(111111*math.cos(40)))
-            deglength=8*3*math.fabs((deglengthlat+deglengthlon))/2
+            deglength=3*math.fabs((deglengthlat+deglengthlon))/2
 
             Deb(f"Shadow len {slength:.2f} -> {deglength:.7f}   {(deglength*111111):.2f}  m  hgt {height:.1f} tanrad {tanrad:.1f}")
 
@@ -223,6 +226,14 @@ def wall2polygon2(alist,height):
 
 
             for k in range(0,1):
+                wallaz=calculate_azimuth_line(LineString(dshitline))
+
+#                if wallaz>180:
+                if sunaz<180:
+                    slength=slength
+                else:
+                    slength=-slength
+                Deb(f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:.1f}")
 
                 newshadow = makerec(dshitline, slength, wallnum) # was b
 
@@ -242,8 +253,8 @@ def wall2polygon2(alist,height):
                 if wallnum==1:
                     total=newshadow
                 else:
-                    elucidate(total)
-                    elucidate(newshadow)
+#                    elucidate(total)
+#                    elucidate(newshadow)
 
                     try:
                         gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=True,make_valid=True)
@@ -294,7 +305,7 @@ def unwraplist(alist):
 
 def main():
     df = pd.read_csv(
-        "/Src/sun/justnan.csv", sep=",")    
+        "/Src/sun/path1.csv", sep=",")    
 
 
     df['geometry'] = df['geometry'].apply(loads)
@@ -320,6 +331,13 @@ def main():
         print(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
 
         newshadow=mainengine(df,rower)
+
+
+
+        Deb("newshadow")
+        Deb(newshadow)
+#        assert notflip(newshadow)
+
         if rower==0:
             totalpack=newshadow
         else:
@@ -330,7 +348,12 @@ def main():
                         # Handle the NotImplementedError exception
                 print(f"Error: Feature not implemented yet: {e}")
 
+
+    Deb("totalpack")
     Deb(totalpack)
+#    assert notflip(totalpack)
+
+
 
     barney = totalpack.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
