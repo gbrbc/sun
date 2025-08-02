@@ -286,15 +286,15 @@ def notflip(aline):
     f_p = Point(aline.coords[0])
     l_p = Point(aline.coords[-1]) # Or line.coords[1] for a simple two-point line
 
-    Deb(f"f p x {f_p.x}")
-    Deb(f"f p y {f_p.y}")
-    Deb(f"l p x {l_p.x}")
-    Deb(f"l p y {l_p.y}")
+#    Deb(f"f p x {f_p.x}")
+#    Deb(f"f p y {f_p.y}")
+#    Deb(f"l p x {l_p.x}")
+#    Deb(f"l p y {l_p.y}")
 
-    Deb(isinrange(f_p.x, -75,-72))
-    Deb(isinrange(f_p.y, 38,41))
-    Deb(isinrange(l_p.x, -75,-72))
-    Deb(isinrange(l_p.y, 38,41))
+#    Deb(isinrange(f_p.x, -75,-72))
+#    Deb(isinrange(f_p.y, 38,41))
+#    Deb(isinrange(l_p.x, -75,-72))
+#    Deb(isinrange(l_p.y, 38,41))
 
     return isinrange(f_p.y, 38,41) and  isinrange(l_p.y, 38,41) and  isinrange(f_p.x, -75,-72) and isinrange(l_p.x, -75,-72)
     

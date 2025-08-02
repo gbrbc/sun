@@ -6,6 +6,8 @@ from functools import partial
 from shapely.ops import transform
 from shapely.validation import make_valid,explain_validity
 import pyproj
+from shapely import force_2d
+
 
 from geotools import *
 
@@ -89,17 +91,22 @@ def makerec(line_coords,buffer_distance,k):
     """
 
     assert original_line.is_valid
-
+    original_line0 = force_2d(original_line)
+    original_line = original_line0
 
 
 #    projected_line = transform(project_to_aeqd, original_line)
 
-    projected_line=transform(transformer2m.transform,original_line)
+    projected_line0=transform(transformer2m.transform,original_line)
+    projected_line = force_2d(projected_line0)
 
     Deb("projected_line")
     Deb(projected_line)
 
-    assert projected_line.is_valid
+    Deb(explain_validity(projected_line))
+   ### NOT IN LONG/LAT assert projected_line.is_valid
+
+
 
 
 
@@ -124,14 +131,24 @@ def makerec(line_coords,buffer_distance,k):
     # 4. Create the buffer (rectangle) in the projected CRS
     Deb('RecStep6')
 
-    assert buffer_distance>=2
+    assert abs(buffer_distance)>=2
 
+    assert notflip(original_line)
     writeWGS(original_line,"/tmp/bs1.json")
 
+   ### NOT IN LONG/LAT    assert notflip(projected_line)
     writeWGS(projected_line,"/tmp/bs2.json")
 
 
-    buffered_shape = projected_line.buffer(buffer_distance, cap_style=2,single_sided=True) # cap_style=2 for flat ends
+
+
+    buffered_shape0 = projected_line.buffer(buffer_distance, cap_style=2,single_sided=True) # cap_style=2 for flat ends
+
+    buffered_shape = force_2d(buffered_shape0)
+
+    Deb(f"buffered_shape   {buffered_shape}")
+
+    Deb(explain_validity(buffered_shape))
 
     writeWGS(buffered_shape,"/tmp/bs3.json")
 

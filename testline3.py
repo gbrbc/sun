@@ -22,10 +22,14 @@ import random
 import geographiclib
 from geopy.point import Point
 
-from rotateline import *
+#from rotateline import *
+from shapely import force_2d
 
 ###needed to read points from testline2
 from geopy.point import Point
+from geopy.distance import geodesic
+from geographiclib.geodesic import Geodesic
+
 
 def Deb(msg=""):
     """!
@@ -126,7 +130,8 @@ def rotateline(mytuple,bearing):
 
 ## get centroid
     cline = LineString([p1, p2])
-    centroid = cline.centroid
+    centroid0 = cline.centroid
+    centroid = force_2d(centroid0)
     Deb(f"cline  {cline}")
 
 
