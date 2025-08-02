@@ -38,7 +38,7 @@ def makerec(line_coords,buffer_distance,k):
 ## transformer2m(2,3)
 ## transformer2lat(3,2)
 
-    Deb("STARTED MAKEREC")
+#    Deb("STARTED MAKEREC")
 
     # 1. Define the initial LineString in longitude/latitude
 
@@ -47,7 +47,7 @@ def makerec(line_coords,buffer_distance,k):
     original_line = LineString(line_coords)
 
     l_az=calculate_azimuth_line(line_coords)
-    Deb(f"makerec wallnum {k:d} az {l_az:.1f}")
+#    Deb(f"makerec wallnum {k:d} az {l_az:.1f}")
     if l_az >= 180:
          Deb('MR negate buffer')
 #         buffer_distance = -buffer_distance 
@@ -63,10 +63,10 @@ def makerec(line_coords,buffer_distance,k):
 
 ###NEED TO LOOK AT DIRECTIONS MORE CAREFULLY
 ##https://pyproj4.github.io/pyproj/stable/api/transformer.html    
-    Deb('RecStep1')
+#    Deb('RecStep1')
     transformer2m = pyproj.Transformer.from_crs(crs_from="EPSG:4326", crs_to="EPSG:32618", always_xy=True,only_best=True)
  # ,errcheck=True
-    Deb('RecStep2')
+#    Deb('RecStep2')
     transformer2lat = pyproj.Transformer.from_crs( "EPSG:32618","EPSG:4326", always_xy=True,only_best=True)
  # ,errcheck=True
 
@@ -81,7 +81,7 @@ def makerec(line_coords,buffer_distance,k):
         pyproj.Proj(local_aeqd)       # Target CRS (local aeqd)
     )
 
-    Deb('RecStep3')
+#    Deb('RecStep3')
 
     project_to_wgs84 = partial(
         pyproj.transform,
@@ -100,10 +100,10 @@ def makerec(line_coords,buffer_distance,k):
     projected_line0=transform(transformer2m.transform,original_line)
     projected_line = force_2d(projected_line0)
 
-    Deb("projected_line")
-    Deb(projected_line)
+#    Deb("projected_line")
+#    Deb(projected_line)
 
-    Deb(explain_validity(projected_line))
+#    Deb(explain_validity(projected_line))
    ### NOT IN LONG/LAT assert projected_line.is_valid
 
 
@@ -111,14 +111,14 @@ def makerec(line_coords,buffer_distance,k):
 
 
 
-    Deb('RecStep4')
+#    Deb('RecStep4')
 
 ########lands a line 1/2 round globe, using wrong epsg
     """
     if k==1:
         parallel_line_mitre = original_line.parallel_offset(buffer_distance, 'mitre')
         gdfp = gpd.GeoDataFrame(geometry=[parallel_line_mitre], crs='wgs84')
-        Deb('RecStep5')
+#        Deb('RecStep5')
 
         bname = "/tmp/wilma10.json"
         pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
@@ -129,7 +129,7 @@ def makerec(line_coords,buffer_distance,k):
 
 
     # 4. Create the buffer (rectangle) in the projected CRS
-    Deb('RecStep6')
+#Deb('RecStep6')
 
     assert abs(buffer_distance)>=2
 
@@ -146,13 +146,13 @@ def makerec(line_coords,buffer_distance,k):
 
     buffered_shape = force_2d(buffered_shape0)
 
-    Deb(f"buffered_shape   {buffered_shape}")
+#    Deb(f"buffered_shape   {buffered_shape}")
 
-    Deb(explain_validity(buffered_shape))
+#    Deb(explain_validity(buffered_shape))
 
     writeWGS(buffered_shape,"/tmp/bs3.json")
 
-    Deb('RecStep7')
+#    Deb('RecStep7')
 
     # 5. Reproject the buffered shape back to longitude/latitude (WGS84)
 #    final_polygon = transform(project_to_wgs84, buffered_shape)
@@ -160,13 +160,13 @@ def makerec(line_coords,buffer_distance,k):
 #    Deb(f"buffered_shape  {buffered_shape}  {type(buffered_shape)}")
 
 
-    Deb(explain_validity(buffered_shape))
+#    Deb(explain_validity(buffered_shape))
     assert buffered_shape.is_valid
     
     final_polygon = transform(transformer2lat.transform,buffered_shape)
 
 
-    Deb(explain_validity(final_polygon))
+#    Deb(explain_validity(final_polygon))
     assert final_polygon.is_valid
 
 
@@ -175,12 +175,12 @@ def makerec(line_coords,buffer_distance,k):
 
 ##    final_polygon['newwallnum']=k
 
-    Deb('RecStep8')
+#    Deb('RecStep8')
 #    gdf = gpd.GeoDataFrame(geometry=[final_polygon], crs='epsg:4326')
     gdf = gpd.GeoDataFrame(geometry=[final_polygon], crs='wgs84')
 
     if not (gdf.is_valid).all():
-        Deb(explain_validity(gdf))
+#        Deb(explain_validity(gdf))
         newgdf=make_valid(gdf)
         gdf=newgdf
 
@@ -208,5 +208,5 @@ def makerec(line_coords,buffer_distance,k):
         w.close()
 
 
-    Deb("LEFT MAKEREC")
+#    Deb("LEFT MAKEREC")
     return gdf

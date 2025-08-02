@@ -341,10 +341,16 @@ def main():
 
         newshadow=mainengine(df,rower)
 
+###try to insert the name of the bldg into the dataframe->json
+
+        maybename=df['NAME'].iloc[rower]
+        if len(maybename):
+            df['bldg']=maybename
+
         writeGDF(newshadow,"/tmp/site"+str(rower)+".json")
 
-        Deb("newshadow")
-        Deb(newshadow)
+#        Deb("newshadow")
+#        Deb(newshadow)
 #        assert notflip(newshadow)
 
         if rower==0:
@@ -358,8 +364,8 @@ def main():
                 print(f"Error: Feature not implemented yet: {e}")
 
 
-    Deb("totalpack")
-    Deb(totalpack)
+#    Deb("totalpack")
+#    Deb(totalpack)
 #    assert notflip(totalpack)
 
 
@@ -413,8 +419,8 @@ def mainengine(df,rower):
 ####get height
 
     height=int(dshit12['Ground Elevation'].iloc[rower]+0)
-    Deb(dshit12['NAME'].iloc[rower])
-    Deb(f"height  {height:d}")
+#    Deb(dshit12['NAME'].iloc[rower])
+#    Deb(f"height  {height:d}")
     
 
     assert height>0
@@ -424,7 +430,7 @@ def mainengine(df,rower):
 
 
     
-    Deb(type(dshit8))
+#    Deb(type(dshit8))
 
 #    if not (dshit8.is_valid).all():
 #        Deb("dshit is not valid")
@@ -432,8 +438,8 @@ def mainengine(df,rower):
 
     dshit8=dshit8.union_all()
 
-    Deb(type(dshit8))
-    Deb(dshit8.geom_type)
+#    Deb(type(dshit8))
+#    Deb(dshit8.geom_type)
     dshit9=gpd.GeoDataFrame(geometry=[dshit8],crs="EPSG:4326")
 
         
