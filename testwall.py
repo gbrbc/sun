@@ -35,10 +35,17 @@ from makerec import *
 from getpos import *
 from geotools import * 
 from geopy.distance import geodesic
+from datetime import datetime
 
 
+logd=open("/Users/reilly/time.log","a")
 
-
+def logme(a):
+    current_datetime = datetime.now()
+    timestamp_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S ")
+    logd.write(str(timestamp_string)+str(a)+"\n")
+    logd.flush()
+    os.fsync(logd.fileno())
 
 def Deb(msg=""):
     """!
@@ -59,6 +66,7 @@ os.environ["PROJ_ONLY_BEST_DEFAULT"]="1"
     
 sunposition=get_position('now', -73.97206, 40.75643)
 Deb(sunposition)
+logme(sunposition)
 
 #######SUPPORT FOR SWAP LAT LONG###########
 
@@ -199,8 +207,6 @@ def wall2polygon2(alist,height):
 ############################################
 ##JSON files################################
 ############################################
-##prerotN  ##frowallN######bigwallN#########
-########mypoint######bldg17#################
 ############################################
 
 ##  
@@ -233,7 +239,9 @@ def wall2polygon2(alist,height):
                     slength=slength
                 else:
                     slength=-slength
-                Deb(f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:.1f}")
+                Deb(f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:d}")
+                fstr = f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:d}"
+                logme(fstr)
 
                 newshadow = makerec(dshitline, slength, wallnum) # was b
 
