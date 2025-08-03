@@ -132,7 +132,7 @@ def rotateline(mytuple,bearing):
     cline = LineString([p1, p2])
     centroid0 = cline.centroid
     centroid = force_2d(centroid0)
-    Deb(f"cline  {cline}")
+#    Deb(f"cline  {cline}")
 
 
 ###cline is a fake just to get the centroid to build real line

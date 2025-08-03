@@ -38,14 +38,15 @@ from geopy.distance import geodesic
 from datetime import datetime
 
 
-logd=open("/Users/reilly/time.log","a")
+#logd=open("/Users/reilly/time.log","a")
 
 def logme(a):
-    current_datetime = datetime.now()
-    timestamp_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S ")
-    logd.write(str(timestamp_string)+str(a)+"\n")
-    logd.flush()
-    os.fsync(logd.fileno())
+    with open("/Users/reilly/time.log","a") as logd:
+        current_datetime = datetime.now()
+        timestamp_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S ")
+        logd.write(str(timestamp_string)+str(a)+"\n")
+        logd.close()
+
 
 def Deb(msg=""):
     """!
@@ -167,7 +168,7 @@ def wall2polygon2(alist,height):
 
 
             result_az = calculate_azimuth_gdf(dshit4)
-            Deb(type(result_az))
+#            Deb(type(result_az))
 
             Deb(f"Compare in {compaz:.1f}  out {result_az:.1f}")
 
@@ -344,8 +345,11 @@ def main():
 ###try to insert the name of the bldg into the dataframe->json
 
         maybename=df['NAME'].iloc[rower]
-        if len(maybename):
-            df['bldg']=maybename
+        Deb('maybename')
+        Deb(maybename)
+        Deb(type(maybename))
+        if len(str(maybename))>0:
+            df['bldg']=str(maybename)
 
         writeGDF(newshadow,"/tmp/site"+str(rower)+".json")
 
