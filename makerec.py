@@ -131,7 +131,10 @@ def makerec(line_coords,buffer_distance,k):
     # 4. Create the buffer (rectangle) in the projected CRS
 #Deb('RecStep6')
 
-    assert abs(buffer_distance)>=2
+#    assert abs(buffer_distance)>=2
+    if  abs(buffer_distance)>=2:
+        return None
+
 
     assert notflip(original_line)
     writeWGS(original_line,"/tmp/bs1.json")

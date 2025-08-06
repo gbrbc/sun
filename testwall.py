@@ -246,6 +246,10 @@ def wall2polygon2(alist,height):
 
                 newshadow = makerec(dshitline, slength, wallnum) # was b
 
+                if newshadow is None:
+                    continue
+
+                
 #                Deb(f"newshadow  {newshadow}  {type(newshadow)}")
 
                 barney = newshadow.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
