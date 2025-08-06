@@ -36,6 +36,8 @@ def Deb(msg=""):
 @callergraph
 
 
+@showrefby
+
 
 @callgraph
     """
@@ -77,6 +79,16 @@ listlin=[line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, 
 
 
 def calculate_azimuth(ax, ay, bx, by):
+    """!
+@callergraph
+
+@showrefby
+
+@callgraph
+    """
+
+
+
     """Computes the bearing in degrees from the point A(ax,ay) to the point B(bx,by)."""
     a=Geodesic.WGS84.Inverse(ay,  ax,  by,  bx, outmask=1929)
     prelim=a['azi1']
@@ -101,6 +113,15 @@ def calculate_azimuth(ax, ay, bx, by):
 
 
 def calculate_azimuth_line2(aline):
+    """!
+@callergraph
+
+@showrefby
+
+@callgraph
+    """
+
+
     if not isinstance(aline,LineString):
         raise  TypeError("supply LineString instead")
     first_point = Point(aline.coords[0])
@@ -125,6 +146,13 @@ gpd.options.display_precision = 9
 ##  get length from input #1
 
 def rotateline(mytuple,bearing):
+    """!
+@callergraph
+
+@showrefby
+
+@callgraph
+    """
 
     (p1,p2)=mytuple
 
@@ -162,6 +190,16 @@ def rotateline(mytuple,bearing):
 
 
 def rotateline_line(myline,bearing):
+    """!
+@callergraph
+
+@showrefby
+
+@callgraph
+    """
+
+
+
     coords = list(myline.coords) # Convert to a list for easier indexing
     p1b = Point(coords[0])
     p2b = Point(coords[-1])

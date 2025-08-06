@@ -30,6 +30,13 @@ def Deb(msg=""):
 
 
 def makerec(line_coords,buffer_distance,k):
+    """!
+@callergraph
+
+
+
+@callgraph
+    """
 
 ## FIX wgx84/4326     32618
 ## transformer2m = Transformer.from_crs("EPSG:4326", "EPSG:32618")
@@ -132,7 +139,7 @@ def makerec(line_coords,buffer_distance,k):
 #Deb('RecStep6')
 
 #    assert abs(buffer_distance)>=2
-    if  abs(buffer_distance)>=2:
+    if  abs(buffer_distance)<2:
         return None
 
 

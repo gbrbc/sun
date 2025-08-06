@@ -50,6 +50,8 @@ def Deb(msg=""):
 @callergraph
 
 
+@showrefby
+
 
 @callgraph
     """
@@ -74,6 +76,17 @@ def Deb(msg=""):
 #############################################
 
 def calculate_azimuth(ax, ay, bx, by):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     """Computes the bearing in degrees from the point A(ax,ay) to the point B(bx,by)."""
     a=Geodesic.WGS84.Inverse(ay,  ax,  by,  bx, outmask=1929)
     prelim=a['azi1']
@@ -100,6 +113,17 @@ def calculate_azimuth(ax, ay, bx, by):
 
 ### are these two az's close?
 def closeaz(az1,az2):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     closemeans=20
 
     if az1==360 or az1==180:
@@ -143,6 +167,17 @@ def closeaz(az1,az2):
 
 ##is   abs(a) - abs(b) < c
 def closeto(a,b,c):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
 #    Deb(f" {abs(a):.2f}  {abs(b):.2f}  {c}  { abs(abs(a) - abs(b)) < c }")
     if   abs(abs(a) - abs(b)) < c :
         return True
@@ -152,6 +187,17 @@ def closeto(a,b,c):
 #############################################
 
 def calculate_azimuth_line(aline):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     if not isinstance(aline,LineString):
         raise  TypeError("supply LineString instead")
     first_point = Point(aline.coords[0])
@@ -165,6 +211,19 @@ def calculate_azimuth_line(aline):
 #############################################
 
 def get_az_el(central_lon, central_lat):
+    """!
+@callergraph
+
+
+@showrefby
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     zulu = ""
     if len(sys.argv) > 1:
         zulu = sys.argv[1]
@@ -203,6 +262,19 @@ def elucidate(atype):
 
 # Function to extract wall segments as (long, lat) tuples
 def extract_wall_coords(geometry):
+    """!
+@callergraph
+
+
+@showrefby
+@showrefby
+
+
+@callgraph
+    """
+
+
+
 #    Deb('extract_wall_coords')
 #    Deb(geometry.geom_type)
     walls = []
@@ -227,6 +299,17 @@ import math
 
 
 def calculate_azimuthengine(x1, y1, x2, y2):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     dx = x2 - x1
     dy = y2 - y1
     azimuth = 90 - math.degrees(math.atan2(dy, dx))
@@ -241,6 +324,17 @@ def calculate_azimuthengine(x1, y1, x2, y2):
 
 
 def calculate_azimuth_gdf(gdf):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     gdf['azimuth'] = gdf.apply(lambda row: calculate_azimuthengine(row['geometry'].coords[0][0],
                                                              row['geometry'].coords[0][1],
                                                              row['geometry'].coords[1][0],
@@ -251,6 +345,17 @@ def calculate_azimuth_gdf(gdf):
 #############################################
 
 def howlong(point1a, point2a):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
 ##    a=LineString([point1, point2])
     Deb(type(point1a))
     point1=geopy.point.Point(point1a)
@@ -264,6 +369,17 @@ def howlong(point1a, point2a):
 #############################################
 
 def howlongline(a):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     if not isinstance(a,LineString):
         raise  TypeError("supply LineString instead")
 
@@ -280,6 +396,17 @@ def isinrange(a,l,h):
 
 ## long/lat
 def notflip(aline):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     if not isinstance(aline,LineString):
         raise  TypeError("supply LineString instead")
 
@@ -302,6 +429,16 @@ def notflip(aline):
 
 ## is in old order from last century   lat/long
 def isflip(aline):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
     if not isinstance(aline,LineString):
         raise  TypeError("supply LineString instead")
 
@@ -329,6 +466,17 @@ def NANfree(a):
 
 
 def writeWGS(aline,afile):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     gdfp = gpd.GeoDataFrame(geometry=[aline], crs='wgs84')
     pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
     with open(afile, "w") as w:
@@ -339,6 +487,17 @@ def writeWGS(aline,afile):
         
 
 def writeGDF(gdfp,afile):
+    """!
+@callergraph
+
+
+@showrefby
+
+
+@callgraph
+    """
+
+
     pebbles = gdfp.to_json(to_wgs84=True)  # True)  #  crs="WGS84"
     with open(afile, "w") as w:
         w.write(pebbles)

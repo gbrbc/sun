@@ -52,7 +52,7 @@ def Deb(msg=""):
     """!
 @callergraph
 
-
+@showrefby
 
 @callgraph
     """
@@ -247,6 +247,7 @@ def wall2polygon2(alist,height):
                 newshadow = makerec(dshitline, slength, wallnum) # was b
 
                 if newshadow is None:
+                    Deb("None back from makerec")
                     continue
 
                 
@@ -261,6 +262,9 @@ def wall2polygon2(alist,height):
                 with open("/tmp/postrect" + str(wallnum) + ".json", "w") as w1:
                     w1.write(barney)
                     w1.close()
+
+
+
 
 
                 if wallnum==1:
@@ -279,6 +283,8 @@ def wall2polygon2(alist,height):
                     except shapely.errors.GEOSException as e:
                         print(f"Error: Feature not implemented yet: {e}")
 
+        if 'total' not in globals():
+            assert 0, "Total no longer global"
 
         total=total.sjoin(total,how="inner")
         return total
@@ -317,6 +323,15 @@ def unwraplist(alist):
 
 
 def main():
+    """!
+@callergraph
+
+
+
+@callgraph
+    """
+
+
     df = pd.read_csv(
         "/Src/sun/path1.csv", sep=",")    
 
@@ -352,9 +367,9 @@ def main():
 ###try to insert the name of the bldg into the dataframe->json
 
         maybename=df['NAME'].iloc[rower]
-        Deb('maybename')
-        Deb(maybename)
-        Deb(type(maybename))
+#        Deb('maybename')
+#        Deb(maybename)
+#        Deb(type(maybename))
         if len(str(maybename))>0:
             df['bldg']=str(maybename)
 
