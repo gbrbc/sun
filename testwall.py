@@ -146,7 +146,7 @@ def wall2polygon2(alist,height):
             else:
         ## Previously added 180 to line's az
                 wallaz= calculate_azimuth_line(LineString(b))
-                Deb("Rotate "+str(wallaz)+"  to  "+str(compaz))
+#                Deb("Rotate "+str(wallaz)+"  to  "+str(compaz))
 
 #    Deb(isinrange(f_p.x, -75,-72))
                 assert (-74 > -75)
@@ -170,7 +170,7 @@ def wall2polygon2(alist,height):
             result_az = calculate_azimuth_gdf(dshit4)
 #            Deb(type(result_az))
 
-            Deb(f"Compare in {compaz:.1f}  out {result_az:.1f}")
+#            Deb(f"Compare in {compaz:.1f}  out {result_az:.1f}")
 
             barney = dshit4.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
@@ -199,7 +199,7 @@ def wall2polygon2(alist,height):
             deglengthlon=slength * (1/(111111*math.cos(40)))
             deglength=3*math.fabs((deglengthlat+deglengthlon))/2
 
-            Deb(f"Shadow len {slength:.2f} -> {deglength:.7f}   {(deglength*111111):.2f}  m  hgt {height:.1f} tanrad {tanrad:.1f}")
+#            Deb(f"Shadow len {slength:.2f} -> {deglength:.7f}   {(deglength*111111):.2f}  m  hgt {height:.1f} tanrad {tanrad:.1f}")
 
 
 
@@ -342,6 +342,9 @@ def main():
 
         newshadow=mainengine(df,rower)
 
+        if newshadow is None:
+            continue
+
 ###try to insert the name of the bldg into the dataframe->json
 
         maybename=df['NAME'].iloc[rower]
@@ -422,7 +425,13 @@ def mainengine(df,rower):
     
 ####get height
 
-    height=int(dshit12['Ground Elevation'].iloc[rower]+0)
+    try:
+        height=int(dshit12['Ground Elevation'].iloc[rower]+0)
+    except:
+        return None
+
+
+
 #    Deb(dshit12['NAME'].iloc[rower])
 #    Deb(f"height  {height:d}")
     
