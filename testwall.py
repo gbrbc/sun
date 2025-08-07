@@ -286,7 +286,13 @@ def wall2polygon2(alist,height):
         if 'total' not in globals():
             assert 0, "Total no longer global"
 
-        total=total.sjoin(total,how="inner")
+        try:
+            total=total.sjoin(total,how="inner")
+        except:
+            return None
+
+
+
         return total
 
 
@@ -458,6 +464,10 @@ def mainengine(df,rower):
     assert height>0
 
     dshit8=wall2polygon2(dlist,height)   
+    if dshit8 is None:
+        return None
+
+
 #    dshit8=unwraplist(dlist)   
 
 
