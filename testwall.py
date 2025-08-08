@@ -23,7 +23,7 @@ import pandas as pd
 #from rotateline import *
 ##for new rotate
 from testline3 import *
-
+import getopt
 
 
 from to_coords import *
@@ -65,9 +65,9 @@ def Deb(msg=""):
 
 os.environ["PROJ_ONLY_BEST_DEFAULT"]="1"
     
-sunposition=get_position('now', -73.97206, 40.75643)
-Deb(sunposition)
-logme(sunposition)
+#sunposition=get_position('now', -73.97206, 40.75643)
+#Deb(sunposition)
+#logme(sunposition)
 
 #######SUPPORT FOR SWAP LAT LONG###########
 
@@ -90,14 +90,32 @@ def wall2polygon2(alist,height):
     global total
     global compaz
     global sunaz
+    global sunposition
+
+    wall2 = None
+# @var wall2
+#  @brief read from argument to wall2polygon2,  long/lat for each wall of building polygon
+    
 
     wallnum=0
     
     for wall1 in alist:
         for wall2 in wall1:
+
+
 #            Deb(wall2)
 
+
+## @var b
+#  @brief long/lat for each wall of building polygon
+
+
+
+
             b=wall2
+
+## @var wallnum
+#  @brief ordinal number of wall being processed
 
             wallnum=wallnum+1
 
@@ -105,10 +123,22 @@ def wall2polygon2(alist,height):
             Deb(f"wallnum {wallnum:d}")
 
 
+## @var sunaz
+#  @brief current azimuth of sun
+
             sunaz=sunposition['azimuth']  #149.617534
             assert (0.0+sunaz)<=360
 
+
+## @var elevation
+#  @brief elevation of sun (incident)
+
             elevation=1.0*sunposition['altitude']  #13.197431
+
+
+
+## @var dshit2
+#  @brief dshit2 geodataframe of wall b/wall2
 
             dshit2 = gpd.GeoDataFrame(geometry=[LineString(b)], crs="WGS84")
 
@@ -155,6 +185,8 @@ def wall2polygon2(alist,height):
                 assert isinrange(40,38,41)
 
                 assert notflip(LineString(b))
+                
+                prerotaz=calculate_azimuth_line(LineString(b))
 
                 dshitline = rotateline_line(LineString(b), compaz)
 
@@ -236,12 +268,22 @@ def wall2polygon2(alist,height):
                 wallaz=calculate_azimuth_line(LineString(dshitline))
 
 #                if wallaz>180:
-                if sunaz<180:
+                if sunaz<140:
                     slength=slength
                 else:
                     slength=-slength
-                Deb(f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:d}")
-                fstr = f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:d}"
+
+### cos might be better to use for width of actual
+### wall that is casting shadow
+
+                actualdiff=abs(abs(wallaz)-abs(prerotaz))
+                actualangle=math.cos(math.radians(actualdiff))
+
+                fstr = f"sunaz {sunaz:.1f}  compaz {compaz:.1f}    slength {slength:.1f}    wallaz {wallaz:.1f}  wallnum {wallnum:d}  height {height:.1f}    prerotaz {prerotaz:.1f}  actualangle {actualangle:.1f}"
+
+                Deb(fstr)
+
+
                 logme(fstr)
 
                 newshadow = makerec(dshitline, slength, wallnum) # was b
@@ -337,9 +379,36 @@ def main():
 @callgraph
     """
 
+    global sunposition
+
+    try:
+        # Define short options ('h' for help, 'o:' for output with argument)
+        # Define long options ('help', 'output=')
+        opts, args = getopt.getopt(sys.argv[1:], "df:t:", ["debug", "file=", "time="])
+    except getopt.GetoptError as err:
+        print(str(err))  # Print error message
+        sys.exit(2)
+
+    inputfile = None
+    time2run = ""
+
+    for opt, arg in opts:
+        if opt in ("-d", "--debug"):
+            pass
+        elif opt in ("-f", "--file"):
+            inputfile = arg
+        elif opt in ("-t", "--time"):            
+            time2run = arg
+
+    sunposition=get_position('now', -73.97206, 40.75643, time=time2run)
+    Deb(sunposition)
+    logme(sunposition)
+
+
+
 
     df = pd.read_csv(
-        "/Src/sun/path1.csv", sep=",")    
+        "/Src/sun/" + inputfile, sep=",")    
 
 
     df['geometry'] = df['geometry'].apply(loads)
@@ -461,7 +530,8 @@ def mainengine(df,rower):
 #    Deb(f"height  {height:d}")
     
 
-    assert height>0
+    if not height>0:
+        return None
 
     dshit8=wall2polygon2(dlist,height)   
     if dshit8 is None:

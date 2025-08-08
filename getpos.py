@@ -14,15 +14,24 @@ from geotools import *
 
 
 
-def get_position(date, central_lon, central_lat):
+def get_position(date, central_lon, central_lat, **kwargs):
+
+    Deb('get_pos')
 
 
-# Sun position (example: afternoon sun, southwest direction)
 
 # Possible time to pass to spa2py
     zulu = ""
-    if len(sys.argv) > 1:
-       zulu = sys.argv[1]
+    
+    for key, value in kwargs.items():
+        if key == "time":
+            zulu=value
+#        print("The value of {} is {}".format(key, value))
+
+
+# Sun position (example: afternoon sun, southwest direction)
+#    if len(sys.argv) > 1:
+#       zulu = sys.argv[1]
 
 #print("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu)
 
