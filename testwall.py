@@ -326,7 +326,8 @@ def wall2polygon2(alist,height):
                         print(f"Error: Feature not implemented yet: {e}")
 
         if 'total' not in globals():
-            assert 0, "Total no longer global"
+            Deb( "Total no longer global")
+            return None
 
         try:
             total=total.sjoin(total,how="inner")
