@@ -520,7 +520,8 @@ def mainengine(df,rower):
 ####get height
 
     try:
-        height=int(dshit12['Ground Elevation'].iloc[rower]+0)
+        height=int(dshit12['height'].iloc[rower]+0)
+        height=height*0.3048 
     except:
         return None
 
