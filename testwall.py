@@ -18,10 +18,7 @@ import subprocess
 import numpy as np
 import pandas as pd
 
-#import geographiclib
 
-#from rotateline import *
-##for new rotate
 from testline3 import *
 import getopt
 
@@ -36,7 +33,7 @@ from getpos import *
 from geotools import * 
 from geopy.distance import geodesic
 from datetime import datetime
-
+from setuptools import setup
 
 #logd=open("/Users/reilly/time.log","a")
 
@@ -65,14 +62,26 @@ def Deb(msg=""):
 
 os.environ["PROJ_ONLY_BEST_DEFAULT"]="1"
     
-#sunposition=get_position('now', -73.97206, 40.75643)
-#Deb(sunposition)
-#logme(sunposition)
 
-#######SUPPORT FOR SWAP LAT LONG###########
 
-def swappoint(apoint):
-    return([apoint.y,apoint.x])
+
+if 'VIRTUAL_ENV' in os.environ:
+        print("Running inside a virtual environment.")
+        print(f"Virtual environment path: {os.environ['VIRTUAL_ENV']}")
+
+else:
+        print("NOT Running inside a virtual environment.")
+        exit(-1)
+
+
+
+"""!
+@callergraph
+
+@showrefby
+
+@callgraph
+"""
 
 
 
@@ -188,13 +197,13 @@ def wall2polygon2(alist,height):
                 
                 prerotaz=calculate_azimuth_line(LineString(b))
 
-                dshitline = rotateline_line(LineString(b), compaz)
+                rotated_bldg_wall = rotateline_line(LineString(b), compaz)
 
-                assert notflip(LineString(dshitline))
+                assert notflip(LineString(rotated_bldg_wall))
 
                 #dshit = rotateline(dshit3.geometry.get_coordinates(),wallaz, sunaz)
 
-                dshit4 = gpd.GeoDataFrame(geometry=[dshitline], crs="WGS84")
+                dshit4 = gpd.GeoDataFrame(geometry=[rotated_bldg_wall], crs="WGS84")
                 dshit2=dshit4
                 dshit=dshit4
 
@@ -265,7 +274,7 @@ def wall2polygon2(alist,height):
 
 
             for k in range(0,1):
-                wallaz=calculate_azimuth_line(LineString(dshitline))
+                wallaz=calculate_azimuth_line(LineString(rotated_bldg_wall))
 
 #                if wallaz>180:
                 if sunaz<140:
@@ -286,16 +295,16 @@ def wall2polygon2(alist,height):
 
                 logme(fstr)
 
-                newshadow = makerec(dshitline, slength, wallnum) # was b
+                polygonOfWallShadow = makerec(rotated_bldg_wall, slength, wallnum) # was b
 
-                if newshadow is None:
+                if polygonOfWallShadow is None:
                     Deb("None back from makerec")
                     continue
 
                 
-#                Deb(f"newshadow  {newshadow}  {type(newshadow)}")
+#                Deb(f"polygonOfWallShadow  {polygonOfWallShadow}  {type(polygonOfWallShadow)}")
 
-                barney = newshadow.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
+                barney = polygonOfWallShadow.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
 
 
@@ -310,13 +319,13 @@ def wall2polygon2(alist,height):
 
 
                 if wallnum==1:
-                    total=newshadow
+                    total=polygonOfWallShadow
                 else:
 #                    elucidate(total)
-#                    elucidate(newshadow)
+#                    elucidate(polygonOfWallShadow)
 
                     try:
-                        gdfunion=gpd.overlay(total,newshadow,how='union',keep_geom_type=True,make_valid=True)
+                        gdfunion=gpd.overlay(total,polygonOfWallShadow,how='union',keep_geom_type=True,make_valid=True)
                         total=gdfunion
                     except NotImplementedError as e:
                         # Handle the NotImplementedError exception
@@ -358,6 +367,9 @@ def main():
     totalpack=None
 
 
+    Deb('main start')
+
+
 
     try:
         # Define short options ('h' for help, 'o:' for output with argument)
@@ -369,6 +381,9 @@ def main():
 
     inputfile = None
     time2run = ""
+
+    Deb(opts)
+
 
     for opt, arg in opts:
         if opt in ("-d", "--debug"):
@@ -400,17 +415,20 @@ def main():
 
     Deb(f"df rows {dfrows:d}")
 
-######loop over each line in csv file##########3
+'''
+loop over each line in csv file##########
+'''
+
 
     for rower in range(0,dfrows):
 
         print(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
         logme(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
 
-        newshadow=mainengine(df,rower)
+        polygonOfWallShadow=mainengine(df,rower)
 
-        if newshadow is None:
-            Deb(f"newshadow is None")
+        if polygonOfWallShadow is None:
+            Deb(f"polygonOfWallShadow is None")
             continue
 
 ###try to insert the name of the bldg into the dataframe->json
@@ -420,13 +438,13 @@ def main():
         if len(str(maybename))>0:
             df['bldg']=str(maybename)
 
-        writeGDF(newshadow,"/tmp/site"+str(rower)+".json")
+        writeGDF(polygonOfWallShadow,"/tmp/site"+str(rower)+".json")
 
         if rower==0:
-            totalpack=newshadow
+            totalpack=polygonOfWallShadow
         else:
             try:
-                gdfunion=gpd.overlay(totalpack,newshadow,how='union',keep_geom_type=True,make_valid=True)
+                gdfunion=gpd.overlay(totalpack,polygonOfWallShadow,how='union',keep_geom_type=True,make_valid=True)
                 totalpack=gdfunion
             except NotImplementedError as e:
                         # Handle the NotImplementedError exception
@@ -512,6 +530,18 @@ def mainengine(df,rower):
         w1.close()
 
     return engineresult
+
+
+
+
+
+
+
+
+
+
+
+
 
 main()
 
