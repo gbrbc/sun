@@ -81,7 +81,7 @@ def wall2polygon2(alist,height):
     """!
 @callergraph
 
-
+@showrefby
 
 @callgraph
     """
@@ -332,6 +332,7 @@ def wall2polygon2(alist,height):
         try:
             total=total.sjoin(total,how="inner")
         except:
+            Deb(f"except for total not global")
             return None
 
 
@@ -344,43 +345,19 @@ def wall2polygon2(alist,height):
 #############################################
 
 
-def wall2polygon(wall_list):
-    """!
-@callergraph
-
-
-
-@callgraph
-    """
-
-
-    global total
-
-
-
-
-
-#############################################
-
-
-
-
-def unwraplist(alist):
-    for wall1 in alist:
-        for wall2 in wall1:
-            Deb(wall2)
-
-
 def main():
     """!
 @callergraph
 
-
+@showrefby
 
 @callgraph
     """
 
     global sunposition
+    totalpack=None
+
+
 
     try:
         # Define short options ('h' for help, 'o:' for output with argument)
@@ -419,17 +396,12 @@ def main():
     
     pd.set_option('display.max_rows',None)
 
-
-
-
-
     dfrows=len(df)
 
-
-
-
-
     Deb(f"df rows {dfrows:d}")
+
+######loop over each line in csv file##########3
+
     for rower in range(0,dfrows):
 
         print(f"Trying {df['NAME'].iloc[rower]} in row {rower:d}")
@@ -438,40 +410,30 @@ def main():
         newshadow=mainengine(df,rower)
 
         if newshadow is None:
+            Deb(f"newshadow is None")
             continue
 
 ###try to insert the name of the bldg into the dataframe->json
 
         maybename=df['NAME'].iloc[rower]
-#        Deb('maybename')
-#        Deb(maybename)
-#        Deb(type(maybename))
+
         if len(str(maybename))>0:
             df['bldg']=str(maybename)
 
         writeGDF(newshadow,"/tmp/site"+str(rower)+".json")
 
-#        Deb("newshadow")
-#        Deb(newshadow)
-#        assert notflip(newshadow)
-
         if rower==0:
             totalpack=newshadow
         else:
             try:
-                gdfunion=gpd.overlay(totalpack,newshadow,how='union',keep_geom_type=False,make_valid=True)
+                gdfunion=gpd.overlay(totalpack,newshadow,how='union',keep_geom_type=True,make_valid=True)
                 totalpack=gdfunion
             except NotImplementedError as e:
                         # Handle the NotImplementedError exception
                 print(f"Error: Feature not implemented yet: {e}")
 
-
-#    Deb("totalpack")
-#    Deb(totalpack)
-#    assert notflip(totalpack)
-
-
-
+######end of loop over each csv line##########
+                
     barney = totalpack.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
     with open("/tmp/totalpack.json", "w") as w1:
@@ -480,11 +442,20 @@ def main():
 
 
 
+
+#############################################
+#######engine which is ######################
+##called for each line in CSV file###########
+#############################################
+#############################################
+
+
+
 def mainengine(df,rower):
     """!
 @callergraph
 
-
+@showrefby
 
 @callgraph
     """
@@ -500,23 +471,19 @@ def mainengine(df,rower):
 #############################################
 #############################################
 
-#    df = []
-#    rower=0
 
 
     dshit12 = gpd.GeoDataFrame(df, crs="WGS84")
     dshit12['walls'] = dshit12.geometry.boundary.apply(extract_wall_coords)
 
-#    print(dshit12[['NAME', 'walls']].iloc[rower])
-#    print(dshit12)
 
-#    Deb(type(dshit12[['walls']].iloc[rower])   )
+
+
     prepredlist=dshit12[['walls']]
-#    Deb(type(prepredlist))
-#    Deb(type(prepredlist.iloc[rower]))
+
     predlist=pd.Series(prepredlist.iloc[rower])
     dlist=predlist.to_list()
-#    Deb(dlist)
+
     
 ####get height
 
@@ -526,12 +493,6 @@ def mainengine(df,rower):
     except:
         return None
 
-
-
-#    Deb(dshit12['NAME'].iloc[rower])
-#    Deb(f"height  {height:d}")
-    
-
     if not height>0:
         return None
 
@@ -539,47 +500,34 @@ def mainengine(df,rower):
     if dshit8 is None:
         return None
 
-
-#    dshit8=unwraplist(dlist)   
-
-
-    
-#    Deb(type(dshit8))
-
-#    if not (dshit8.is_valid).all():
-#        Deb("dshit is not valid")
-
-
     dshit8=dshit8.union_all()
 
-#    Deb(type(dshit8))
-#    Deb(dshit8.geom_type)
-    dshit9=gpd.GeoDataFrame(geometry=[dshit8],crs="EPSG:4326")
+    engineresult=gpd.GeoDataFrame(geometry=[dshit8],crs="EPSG:4326")
 
         
-    barney = dshit9.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
-#    barney = dshit9.to_file("/tmp/total99.json",driver='GeoJSON')
+    barney = engineresult.to_json(to_wgs84=True)  # =True)  #  crs="EPSG:3627"
 
     with open("/tmp/total" + str(rower) + ".json", "w") as w1:
         w1.write(barney)
         w1.close()
 
-
-#    dshit9.set_crs("EPSG:2263",inplace=True)
-##?    dshit8=dshit9
-##?    dshit8['centroid']=dshit8['geometry'].centroid
-#    Deb(type(dshit8['centroid']))
-#    Deb(dshit8['centroid'])
-    return dshit9
+    return engineresult
 
 main()
 
 
+#############################################
+#############################################
+####everything below this is a comment#######
+#############################################
+#############################################
 
+
+'''
 
 #https://geographiclib.sourceforge.io/html/python/
 
-'''
+
 
 
 class geographiclib.constants.Constants[source]
@@ -591,10 +539,10 @@ the equatorial radius in meters of the WGS84 ellipsoid in meters
 WGS84_f = 0.0033528106647474805
 the flattening of the WGS84 ellipsoid, 1/298.257223563
 
-'''
 
 
-'''
+
+
 
 given the sun's azimuth and sun's elevation shining on wall at a different angle what formulas are used to compute the ground shadow for a program
 
@@ -645,9 +593,9 @@ https://bigladdersoftware.com/epx/docs/8-3/engineering-reference/shading-module.
 149.617534	13.197431 
 
 
-'''
 
-'''
+
+
 A wall has a height of h.   The sun shines at a certain azimuth and elevation.  can the ground shadow be calculated by using the top of the wall as if it were a line in space, and what would be the formula to use in a program?
 
 
@@ -655,18 +603,18 @@ A wall has a height of h.   The sun shines at a certain azimuth and elevation.  
 
 from a shapely linestring I want to create a rectangle by duplicating the linestring 3 meters away and then creating lines to complete the rectangle.  The initial linestring is defined in long/lat and all points need to be in long/lat when the rectangle is defined.  The rectangle will then be changed into a polygon in geopandas.  previous example code resulted in "AttributeError: module 'shapely.geometry' has no attribute 'line_merge'"
 
-'''
 
-'''
+
+
     dlist=[(-73.971815685417,40.756642525492), (-73.971845414769,40.756601849732), (-73.971882883991,40.756617685264), (-73.971892228211,40.756621634459), (-73.97194539848,40.756548887488), (-73.971898585074,40.756529102783), (-73.971917137126,40.75650372026), (-73.971966606825,40.756436035918), (-73.972187677007,40.756529466501), (-73.972014616104,40.756766249388), (-73.971949620799,40.756738780776), (-73.971793544195,40.756672818476), (-73.971815685417,40.756642525492)]
 
 ##135 e 50    dlist = [(-73.971558876777, 40.756579563884), (-73.971583976616, 40.756537332775), (-73.97153870727, 40.75651820027), (-73.971458333347, 40.756484232235), (-73.971510010991, 40.75641352834), (-73.971514021216, 40.756415223183), (-73.971564459855, 40.756436539799), (-73.971612762728, 40.756370451916), (-73.971558313901, 40.75634744048), (-73.971580059362, 40.756317688647), (-73.97160519838, 40.756283293739), (-73.971755861794, 40.756346968589), (-73.971966606825, 40.756436035918), (-73.971917137126, 40.75650372026), (-73.971842763583, 40.756472287977), (-73.971820192309, 40.756503168892), (-73.971808961763, 40.756518534168), (-73.971834435727, 40.756529299637), (-73.971858272213, 40.756539374012), (-73.971847763277, 40.756553752515), (-73.971817644113, 40.75659496128), (-73.971647241465, 40.756559142392), (-73.97161694632, 40.75659895798), (-73.971591643035, 40.756593410934)]
 
 ##    dlist = [(-73.946942654932 ,40.806222154761), (-73.946977239811, 40.80617461534), (-73.947156723315, 40.806250005546), ( -73.947138469349, 40.806275095875), (-73.947122138526, 40.806297544119),( -73.947066845689, 40.8062743192),( -73.946942654932, 40.806222154761)]
-'''
 
 
-'''
+
+
 kimberly or what is in path138.csv
 
 shadow wrong way

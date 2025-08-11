@@ -140,6 +140,7 @@ def makerec(line_coords,buffer_distance,k):
 
 #    assert abs(buffer_distance)>=2
     if  abs(buffer_distance)<2:
+        Deb(f"buffer_distance {buffer_distance:.1f} < 2")
         return None
 
 

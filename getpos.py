@@ -44,8 +44,20 @@ def get_position(date, central_lon, central_lat, **kwargs):
     )
     aresult = result.stdout
 
+## Get the first line of output 
 
-    (sun_azimuth1, sun_altitude1) = aresult.split()
+    realresult_index = aresult.find('\n')
+
+# If a newline is found, slice the string up to that index
+
+    if realresult_index != -1:
+        realresult = aresult[:realresult_index]
+    else:
+    # If no newline is found, the entire aresult is considered the "first line"
+        realresult = aresult
+
+
+    (sun_azimuth1, sun_altitude1) = realresult.split()
     sun_azimuth = float(sun_azimuth1) + 0.0  # 99.0
     sun_altitude = float(sun_altitude1) + 0.0
     # sun_azimuth = 144.71 # degrees (South-West)
@@ -53,4 +65,7 @@ def get_position(date, central_lon, central_lat, **kwargs):
     sunposition={ "azimuth" :sun_azimuth,"altitude" :sun_altitude}
     Deb(f"sunpos az  {sun_azimuth:.2f} nyc_az {sun_azimuth-29:.2f}   alt {sun_altitude:.2f}")
 
+    if len(zulu) > 0:
+        print(aresult)
+    
     return sunposition 
