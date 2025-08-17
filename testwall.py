@@ -23,7 +23,6 @@ from testline3 import *
 import getopt
 
 
-from to_coords import *
 
 
 from geographiclib.geodesic import Geodesic
