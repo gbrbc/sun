@@ -12,6 +12,21 @@ import pandas as pd
 
 from geotools import *
 
+def Deb(msg=""):
+    """!
+@callergraph
+
+@showrefby
+
+@callgraph
+    """
+
+    print(f"DebugGP {sys._getframe().f_back.f_lineno}: {msg}", flush=True,file=sys.stderr)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+
+
 
 
 def get_position(date, central_lon, central_lat, **kwargs):
@@ -33,7 +48,7 @@ def get_position(date, central_lon, central_lat, **kwargs):
 #    if len(sys.argv) > 1:
 #       zulu = sys.argv[1]
 
-#print("spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu)
+    Deb(f"spa2py {central_lon:.3f}  {central_lat:.3f} {zulu}")
 
     result = subprocess.run(
         "spa2py " + str(central_lon) + " " + str(central_lat) + " " + zulu,

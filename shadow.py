@@ -53,7 +53,7 @@ def Deb(msg=""):
 @callgraph
     """
 
-    print(f"DebugTW {sys._getframe().f_back.f_lineno}: {msg}", flush=True,file=sys.stderr)
+    print(f"DebugSH {sys._getframe().f_back.f_lineno}: {msg}", flush=True,file=sys.stderr)
     sys.stdout.flush()
     sys.stderr.flush()
 
@@ -222,7 +222,15 @@ def wall2polygon2(alist,height):
 ##https://www.suncalc.org/#/40.7143,-74.006,10/2025.07.21/11:06/45/3
 ## says 28m for shadow length
 
-            tanrad=(math.tan(np.deg2rad(elevation)))
+            elevation0 =sunposition['altitude']
+
+            elevation0 = 56
+
+            tanrad=(math.tan(np.deg2rad(elevation0)))
+
+
+            Deb(f"elevation0  {elevation0:.2f}   height  {height:.2f}  tanrad  {tanrad:.2f}")
+
 
             slength=  height / tanrad
 
